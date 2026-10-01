@@ -23,3 +23,8 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* Edge adds its own reveal button; PasswordInput has one already. */
+input::-ms-reveal {
+  display: none;
+}

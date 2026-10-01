@@ -3,7 +3,7 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { jwtVerify, SignJWT } from "jose";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db, users } from "@/db";
 
 const COOKIE_NAME = "trim_session";
@@ -15,8 +15,8 @@ function secretKey() {
   return new TextEncoder().encode(secret);
 }
 
-export async function createSession(userId: string) {
-  const token = await new SignJWT({ sub: userId })
+export async function createSession(userId: string, sessionVersion: number) {
+  const token = await new SignJWT({ sub: userId, ver: sessionVersion })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${MAX_AGE_SECONDS}s`)
@@ -35,24 +35,26 @@ export async function deleteSession() {
   (await cookies()).delete(COOKIE_NAME);
 }
 
-async function getSessionUserId() {
+async function getSession() {
   const token = (await cookies()).get(COOKIE_NAME)?.value;
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secretKey(), { algorithms: ["HS256"] });
-    return payload.sub ?? null;
+    if (!payload.sub) return null;
+    // Sessions created before versions existed have no `ver`; treat them as version 0.
+    return { userId: payload.sub, version: typeof payload.ver === "number" ? payload.ver : 0 };
   } catch {
     return null;
   }
 }
 
 export const getCurrentUser = cache(async () => {
-  const userId = await getSessionUserId();
-  if (!userId) return null;
+  const session = await getSession();
+  if (!session) return null;
   const [user] = await db()
     .select({ id: users.id, name: users.name, email: users.email })
     .from(users)
-    .where(eq(users.id, userId));
+    .where(and(eq(users.id, session.userId), eq(users.sessionVersion, session.version)));
   return user ?? null;
 });
 

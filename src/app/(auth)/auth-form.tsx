@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { login, signup } from "@/app/actions/auth";
+import { PasswordInput } from "@/components/password-input";
 import { buttonClass, inputClass } from "@/components/ui";
 
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
@@ -22,14 +23,19 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         <input name="email" type="email" required autoComplete="email" className={inputClass} />
       </label>
       <label className="flex flex-col gap-1.5 text-sm font-medium">
-        Password
-        <input
+        <span className="flex justify-between">
+          Password
+          {!isSignup && (
+            <Link href="/forgot-password" className="font-normal text-zinc-500 hover:underline">
+              Forgot password?
+            </Link>
+          )}
+        </span>
+        <PasswordInput
           name="password"
-          type="password"
           required
           minLength={isSignup ? 8 : undefined}
           autoComplete={isSignup ? "new-password" : "current-password"}
-          className={inputClass}
         />
       </label>
 
