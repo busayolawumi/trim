@@ -23,10 +23,10 @@ scrypt password hashing + a signed JWT session cookie (`jose`). Runs on Vercel's
    Fill in `DATABASE_URL` and set `SESSION_SECRET` to the output of `openssl rand -base64 32`.
 3. Install and create the tables:
    ```bash
-   pnpm install
-   pnpm db:push
+   npm install
+   npm run db:push
    ```
-4. Run it: `pnpm dev` → http://localhost:3000
+4. Run it: `npm run dev` → http://localhost:3000
 
 ## Deploying to Vercel
 
@@ -42,11 +42,11 @@ scrypt password hashing + a signed JWT session cookie (`jose`). Runs on Vercel's
 
 | Script | What it does |
 |---|---|
-| `pnpm dev` | Start the dev server |
-| `pnpm db:push` | Sync the schema in `src/db/schema.ts` to the database |
-| `pnpm db:studio` | Browse the database in Drizzle Studio |
-| `pnpm typecheck` | Type-check the project |
-| `pnpm lint` | Lint |
+| `npm run dev` | Start the dev server |
+| `npm run db:push` | Sync the schema in `src/db/schema.ts` to the database |
+| `npm run db:studio` | Browse the database in Drizzle Studio |
+| `npm run typecheck` | Type-check the project |
+| `npm run lint` | Lint |
 
 ## How it fits together
 
