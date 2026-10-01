@@ -1,5 +1,8 @@
+// Match the link-preview crawlers, not app names: in-app browsers (e.g. LinkedIn's "[LinkedInApp]",
+// Pinterest's "Pinterest for iOS") are real people. LinkedInBot, TelegramBot, Slackbot, Discordbot and
+// Pinterestbot are caught by "bot"; SkypeUriPreview and BingPreview by "preview".
 const BOT_PATTERN =
-  /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|telegram|slack|discord|skype|linkedin|embedly|vkshare|pinterest|bingpreview|headless|curl|wget|python-requests|axios|go-http-client|node-fetch|httpclient/i;
+  /bot|crawl|spider|slurp|preview|facebookexternalhit|^whatsapp\/|slack-imgproxy|embedly|vkshare|headless|curl|wget|python-requests|axios|go-http-client|node-fetch|httpclient/i;
 
 export function parseUserAgent(ua: string | null) {
   if (!ua) return { isBot: true, device: null, browser: null };
