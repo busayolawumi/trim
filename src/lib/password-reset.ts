@@ -1,18 +1,13 @@
 import "server-only";
-import { createHash, randomBytes } from "node:crypto";
 import { and, eq, gt, lt, sql } from "drizzle-orm";
 import { db, passwordResetTokens } from "@/db";
+import { hashToken, newToken } from "@/lib/tokens";
 
 export const RESET_TOKEN_MINUTES = 60;
 
-// Tokens are 256 random bits, so a fast hash is enough (no need for scrypt).
-function hashToken(token: string) {
-  return createHash("sha256").update(token).digest("hex");
-}
-
 /** Creates a new token for the user, replacing any earlier ones. Returns the raw token for the email link. */
 export async function createResetToken(userId: string) {
-  const token = randomBytes(32).toString("base64url");
+  const token = newToken();
   await db().delete(passwordResetTokens).where(eq(passwordResetTokens.userId, userId));
   await db()
     .delete(passwordResetTokens)

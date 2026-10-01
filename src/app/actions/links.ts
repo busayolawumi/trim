@@ -30,6 +30,7 @@ export async function createLink(
   formData: FormData,
 ): Promise<CreateLinkState> {
   const user = await requireUser();
+  if (!user.emailVerifiedAt) return { error: "Verify your email before creating links." };
 
   const parsedUrl = urlSchema.safeParse(String(formData.get("url") ?? "").trim());
   if (!parsedUrl.success) return { error: parsedUrl.error.issues[0].message };

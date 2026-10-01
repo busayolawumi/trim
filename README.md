@@ -24,7 +24,7 @@ scrypt password hashing + a signed JWT session cookie (`jose`). Runs on Vercel's
 3. Install and create the tables:
    ```bash
    npm install
-   npm run db:push
+   npm run db:migrate
    ```
 4. Run it: `npm run dev` → http://localhost:3000
 
@@ -39,12 +39,23 @@ scrypt password hashing + a signed JWT session cookie (`jose`). Runs on Vercel's
 3. In **Project → Settings → Domains**, add `go.busayolawumi.dev`. Since the domain's DNS is on
    Vercel, the record is created automatically.
 
+## Database changes
+
+1. Edit `src/db/schema.ts`.
+2. `npm run db:generate` writes the SQL to a new file in `drizzle/`. Review it; edit it if needed
+   (e.g. to backfill data).
+3. `npm run db:migrate` applies it to your local database.
+4. Commit the file with the code. Production deploys on Vercel apply new migrations before
+   building (`scripts/migrate.mjs`), in a single transaction, so a failed migration fails the
+   deploy and leaves the live site on the previous version. Preview deploys skip migrations.
+
 ## Scripts
 
 | Script | What it does |
 |---|---|
 | `npm run dev` | Start the dev server |
-| `npm run db:push` | Sync the schema in `src/db/schema.ts` to the database |
+| `npm run db:generate` | Create a migration in `drizzle/` from changes to `src/db/schema.ts` |
+| `npm run db:migrate` | Apply new migrations to the database in `.env.local` |
 | `npm run db:studio` | Browse the database in Drizzle Studio |
 | `npm run typecheck` | Type-check the project |
 | `npm run lint` | Lint |

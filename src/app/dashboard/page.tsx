@@ -7,6 +7,7 @@ import { SHORT_HOST, shortUrl } from "@/lib/config";
 import { requireUser } from "@/lib/session";
 import { CreateLinkForm } from "./create-link-form";
 import { DeleteLinkButton } from "./delete-link-button";
+import { VerifyEmailBanner } from "./verify-email-banner";
 
 export const metadata = { title: "Dashboard · Trim" };
 
@@ -36,7 +37,7 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <CreateLinkForm />
+      {user.emailVerifiedAt ? <CreateLinkForm /> : <VerifyEmailBanner email={user.email} />}
 
       <section>
         <h2 className="mb-3 font-semibold">Your links ({rows.length})</h2>

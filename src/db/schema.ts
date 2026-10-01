@@ -15,6 +15,8 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   // Stored in the session cookie; bumping it logs out every existing session.
   sessionVersion: integer("session_version").notNull().default(0),
+  // Null until the user clicks the link in their verification email.
+  emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -74,4 +76,19 @@ export const passwordResetTokens = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("password_reset_tokens_user_id_idx").on(t.userId)],
+);
+
+export const emailVerificationTokens = pgTable(
+  "email_verification_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // SHA-256 of the token; the token itself only exists in the emailed link.
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("email_verification_tokens_user_id_idx").on(t.userId)],
 );

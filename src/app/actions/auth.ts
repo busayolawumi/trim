@@ -7,19 +7,22 @@ import { z } from "zod";
 import { db, passwordResetTokens, users } from "@/db";
 import { SHORT_BASE_URL } from "@/lib/config";
 import { sendEmail } from "@/lib/email";
-import { hashPassword, verifyPassword } from "@/lib/password";
+import { sendVerificationEmail } from "@/lib/email-verification";
+import { fakeVerifyPassword, hashPassword, verifyPassword } from "@/lib/password";
 import { consumeResetToken, createResetToken, RESET_TOKEN_MINUTES } from "@/lib/password-reset";
 import { clearAttempts, clientIp, isRateLimited, recordAttempt, type Limit } from "@/lib/rate-limit";
-import { createSession, deleteSession } from "@/lib/session";
+import { createSession, deleteSession, requireUser } from "@/lib/session";
 
 export type AuthState = { error?: string } | undefined;
 export type ForgotPasswordState = { error?: string; sent?: boolean } | undefined;
+export type ResendVerificationState = { error?: string; sent?: boolean } | undefined;
 
 const LOGIN_PER_EMAIL: Limit = { max: 5, windowMinutes: 15 };
 const LOGIN_PER_IP: Limit = { max: 20, windowMinutes: 60 };
 const SIGNUP_PER_IP: Limit = { max: 3, windowMinutes: 60 };
 const RESET_PER_EMAIL: Limit = { max: 3, windowMinutes: 60 };
 const RESET_PER_IP: Limit = { max: 5, windowMinutes: 60 };
+const VERIFY_RESEND_PER_USER: Limit = { max: 3, windowMinutes: 60 };
 
 const TOO_MANY = "Too many attempts. Please try again later.";
 
@@ -65,6 +68,7 @@ export async function signup(_: AuthState, formData: FormData): Promise<AuthStat
 
   if (!user) return { error: "An account with that email already exists." };
 
+  after(() => sendVerificationEmail(user.id, email));
   await createSession(user.id, user.sessionVersion);
   redirect("/dashboard");
 }
@@ -86,7 +90,11 @@ export async function login(_: AuthState, formData: FormData): Promise<AuthState
     .from(users)
     .where(eq(users.email, parsed.data.email));
 
-  if (!user || !(await verifyPassword(parsed.data.password, user.passwordHash))) {
+  let valid = false;
+  if (user) valid = await verifyPassword(parsed.data.password, user.passwordHash);
+  else await fakeVerifyPassword(parsed.data.password);
+
+  if (!user || !valid) {
     await recordAttempt(emailKey, ipKey);
     return { error: "Incorrect email or password." };
   }
@@ -153,6 +161,8 @@ export async function resetPassword(_: AuthState, formData: FormData): Promise<A
     .set({
       passwordHash: await hashPassword(parsed.data.password),
       sessionVersion: sql`${users.sessionVersion} + 1`,
+      // The reset link proves they can read this inbox.
+      emailVerifiedAt: sql`coalesce(${users.emailVerifiedAt}, now())`,
     })
     .where(eq(users.id, userId))
     .returning({ id: users.id, email: users.email, sessionVersion: users.sessionVersion });
@@ -163,4 +173,16 @@ export async function resetPassword(_: AuthState, formData: FormData): Promise<A
 
   await createSession(user.id, user.sessionVersion);
   redirect("/dashboard");
+}
+
+export async function resendVerificationEmail(): Promise<ResendVerificationState> {
+  const user = await requireUser();
+  if (user.emailVerifiedAt) return { sent: true };
+
+  const key = `verify:user:${user.id}`;
+  if (await isRateLimited(key, VERIFY_RESEND_PER_USER)) return { error: TOO_MANY };
+  await recordAttempt(key);
+
+  await sendVerificationEmail(user.id, user.email);
+  return { sent: true };
 }

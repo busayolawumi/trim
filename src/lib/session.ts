@@ -52,7 +52,12 @@ export const getCurrentUser = cache(async () => {
   const session = await getSession();
   if (!session) return null;
   const [user] = await db()
-    .select({ id: users.id, name: users.name, email: users.email })
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      emailVerifiedAt: users.emailVerifiedAt,
+    })
     .from(users)
     .where(and(eq(users.id, session.userId), eq(users.sessionVersion, session.version)));
   return user ?? null;
