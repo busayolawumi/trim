@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Trim
 
-## Getting Started
+A link shortener with click tracking. Live at `go.busayolawumi.dev`.
 
-First, run the development server:
+- Sign up, paste a long URL, and choose a short name (or get a random one)
+- The short name is checked for availability as you type
+- Every click is logged (time, referrer, country, device, browser) before redirecting
+- Link previews and bots (WhatsApp, Slack, crawlers…) are tracked separately so they don't inflate counts
+- No IP addresses are stored
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Stack
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Next.js (App Router) · Neon Postgres · Drizzle ORM · Tailwind. Auth is hand-rolled:
+scrypt password hashing + a signed JWT session cookie (`jose`). Runs on Vercel's free Hobby plan.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Local setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Create a free Postgres database at [neon.tech](https://neon.tech) and copy its connection string.
+2. Create `.env.local` from the example:
+   ```bash
+   cp .env.example .env.local
+   ```
+   Fill in `DATABASE_URL` and set `SESSION_SECRET` to the output of `openssl rand -base64 32`.
+3. Install and create the tables:
+   ```bash
+   pnpm install
+   pnpm db:push
+   ```
+4. Run it: `pnpm dev` → http://localhost:3000
 
-## Learn More
+## Deploying to Vercel
 
-To learn more about Next.js, take a look at the following resources:
+1. Push this repo to GitHub and import it in Vercel.
+2. Add the environment variables in **Project → Settings → Environment Variables**:
+   - `DATABASE_URL`
+   - `SESSION_SECRET`
+   - `NEXT_PUBLIC_SHORT_BASE_URL=https://go.busayolawumi.dev`
+3. In **Project → Settings → Domains**, add `go.busayolawumi.dev`. Since the domain's DNS is on
+   Vercel, the record is created automatically.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Script | What it does |
+|---|---|
+| `pnpm dev` | Start the dev server |
+| `pnpm db:push` | Sync the schema in `src/db/schema.ts` to the database |
+| `pnpm db:studio` | Browse the database in Drizzle Studio |
+| `pnpm typecheck` | Type-check the project |
+| `pnpm lint` | Lint |
 
-## Deploy on Vercel
+## How it fits together
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Path | Purpose |
+|---|---|
+| `src/app/[slug]/route.ts` | The redirect: looks up the slug, sends a 302, logs the click after responding |
+| `src/app/actions/` | Server actions for auth and creating/deleting links |
+| `src/app/api/slug-available` | Live availability check used by the create form |
+| `src/app/dashboard/` | Link list, create form, and per-link stats |
+| `src/lib/slug.ts` | Slug rules and reserved words |
+| `src/db/schema.ts` | `users`, `links`, `clicks` tables |
