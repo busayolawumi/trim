@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { and, count, desc, eq, sql, type AnyColumn } from "drizzle-orm";
 import { clicks, db, links } from "@/db";
 import { CopyButton } from "@/components/copy-button";
-import { cardClass, secondaryButtonClass } from "@/components/ui";
+import { DownloadIcon } from "@/components/icons";
+import { cardClass, iconButtonClass } from "@/components/ui";
 import { shortUrl } from "@/lib/config";
 import { countryName } from "@/lib/countries";
 import { requireUser } from "@/lib/session";
@@ -87,8 +88,14 @@ export default async function LinkStatsPage({ params }: PageProps<"/dashboard/[s
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <a href={`/dashboard/${link.slug}/export`} download className={secondaryButtonClass}>
-            Export CSV
+          <a
+            href={`/dashboard/${link.slug}/export`}
+            download
+            aria-label="Export clicks as CSV"
+            title="Export clicks as CSV"
+            className={iconButtonClass}
+          >
+            <DownloadIcon />
           </a>
           <CopyButton text={shortUrl(link.slug)} />
         </div>

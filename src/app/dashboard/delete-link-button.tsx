@@ -2,7 +2,8 @@
 
 import { useTransition } from "react";
 import { deleteLink } from "@/app/actions/links";
-import { secondaryButtonClass } from "@/components/ui";
+import { TrashIcon } from "@/components/icons";
+import { dangerIconButtonClass } from "@/components/ui";
 
 export function DeleteLinkButton({ linkId, slug }: { linkId: string; slug: string }) {
   const [pending, startTransition] = useTransition();
@@ -11,13 +12,15 @@ export function DeleteLinkButton({ linkId, slug }: { linkId: string; slug: strin
     <button
       type="button"
       disabled={pending}
-      className={`${secondaryButtonClass} text-red-600 dark:text-red-400`}
+      aria-label={`Delete /${slug}`}
+      title="Delete"
+      className={dangerIconButtonClass}
       onClick={() => {
         if (!confirm(`Delete /${slug}? Its click history will be deleted too.`)) return;
         startTransition(() => deleteLink(linkId));
       }}
     >
-      {pending ? "Deleting…" : "Delete"}
+      <TrashIcon />
     </button>
   );
 }
