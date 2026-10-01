@@ -1,17 +1,15 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { createLink, type CreateLinkState } from "@/app/actions/links";
 import { CopyButton } from "@/components/copy-button";
 import { buttonClass, cardClass, inputClass } from "@/components/ui";
 import { SHORT_HOST, shortUrl } from "@/lib/config";
-
-type CheckResult = { slug: string; available: boolean; reason?: string };
+import { useSlugAvailability } from "./use-slug-availability";
 
 export function CreateLinkForm() {
   const [url, setUrl] = useState("");
   const [slug, setSlug] = useState("");
-  const [check, setCheck] = useState<CheckResult | null>(null);
 
   const [state, action, pending] = useActionState(
     async (prev: CreateLinkState, formData: FormData) => {
@@ -25,36 +23,7 @@ export function CreateLinkForm() {
     undefined,
   );
 
-  const value = slug.trim().toLowerCase();
-
-  useEffect(() => {
-    if (!value) return;
-    const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/slug-available?slug=${encodeURIComponent(value)}`, {
-          signal: controller.signal,
-        });
-        const data: { available: boolean; reason?: string } = await res.json();
-        setCheck({ slug: value, ...data });
-      } catch {
-        // Aborted or offline; the server re-checks on submit anyway.
-      }
-    }, 350);
-
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [value]);
-
-  const availability = !value
-    ? { status: "idle" as const }
-    : check?.slug !== value
-      ? { status: "checking" as const }
-      : check.available
-        ? { status: "available" as const }
-        : { status: "unavailable" as const, reason: check.reason ?? "Not available." };
+  const availability = useSlugAvailability(slug);
 
   const slugMessage =
     state?.slugError ??

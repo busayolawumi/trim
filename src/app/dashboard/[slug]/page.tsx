@@ -4,10 +4,11 @@ import { and, count, desc, eq, sql, type AnyColumn } from "drizzle-orm";
 import { clicks, db, links } from "@/db";
 import { CopyButton } from "@/components/copy-button";
 import { cardClass, secondaryButtonClass } from "@/components/ui";
-import { SHORT_HOST, shortUrl } from "@/lib/config";
+import { shortUrl } from "@/lib/config";
 import { countryName } from "@/lib/countries";
 import { requireUser } from "@/lib/session";
 import { getTimezone } from "@/lib/timezone";
+import { LinkDestination, LinkSlug } from "./link-editors";
 
 const DAYS = 30;
 
@@ -79,15 +80,8 @@ export default async function LinkStatsPage({ params }: PageProps<"/dashboard/[s
 
       <div className={`${cardClass} flex flex-col gap-3 sm:flex-row sm:items-center`}>
         <div className="min-w-0 flex-1">
-          <h1 className="font-mono text-lg font-semibold">{SHORT_HOST}/{link.slug}</h1>
-          <a
-            href={link.url}
-            target="_blank"
-            rel="noreferrer"
-            className="block truncate text-sm text-zinc-500 hover:underline"
-          >
-            → {link.url}
-          </a>
+          <LinkSlug linkId={link.id} slug={link.slug} />
+          <LinkDestination linkId={link.id} url={link.url} />
           <p className="mt-1 text-xs text-zinc-500">
             Created {link.createdAt.toLocaleDateString("en", { dateStyle: "medium", timeZone: tz })}
           </p>

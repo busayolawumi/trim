@@ -9,3 +9,7 @@ export const secondaryButtonClass =
 
 export const cardClass =
   "rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900";
+
+/** Small borderless icon button for inline actions, e.g. edit next to a value. */
+export const ghostIconButtonClass =
+  "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100";
