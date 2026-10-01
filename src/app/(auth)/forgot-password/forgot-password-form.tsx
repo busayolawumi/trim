@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { requestPasswordReset } from "@/app/actions/auth";
 import { buttonClass, inputClass } from "@/components/ui";
 
 export function ForgotPasswordForm() {
   const [state, action, pending] = useActionState(requestPasswordReset, undefined);
+  // Controlled so it survives the form reset after an error.
+  const [email, setEmail] = useState("");
 
   if (state?.sent) {
     return (
@@ -25,7 +27,15 @@ export function ForgotPasswordForm() {
     <form action={action} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5 text-sm font-medium">
         Email
-        <input name="email" type="email" required autoComplete="email" className={inputClass} />
+        <input
+          name="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+          className={inputClass}
+        />
       </label>
 
       {state?.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}

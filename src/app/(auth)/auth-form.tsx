@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { login, signup } from "@/app/actions/auth";
 import { PasswordInput } from "@/components/password-input";
 import { buttonClass, inputClass } from "@/components/ui";
@@ -9,18 +9,36 @@ import { buttonClass, inputClass } from "@/components/ui";
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [state, action, pending] = useActionState(mode === "login" ? login : signup, undefined);
   const isSignup = mode === "signup";
+  // Controlled so they survive the form reset after a failed submit; only the password clears.
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
   return (
     <form action={action} className="flex flex-col gap-4">
       {isSignup && (
         <label className="flex flex-col gap-1.5 text-sm font-medium">
           Name
-          <input name="name" required autoComplete="name" className={inputClass} />
+          <input
+            name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            autoComplete="name"
+            className={inputClass}
+          />
         </label>
       )}
       <label className="flex flex-col gap-1.5 text-sm font-medium">
         Email
-        <input name="email" type="email" required autoComplete="email" className={inputClass} />
+        <input
+          name="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+          className={inputClass}
+        />
       </label>
       <label className="flex flex-col gap-1.5 text-sm font-medium">
         <span className="flex justify-between">
