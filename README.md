@@ -35,6 +35,7 @@ scrypt password hashing + a signed JWT session cookie (`jose`). Runs on Vercel's
    - `DATABASE_URL`
    - `SESSION_SECRET`
    - `RESEND_API_KEY` and `EMAIL_FROM` (password reset emails; the sending domain must be verified in Resend)
+   - `SAFE_BROWSING_API_KEY` (Google Safe Browsing; new links to known phishing/malware are refused)
    - `NEXT_PUBLIC_SHORT_BASE_URL=https://go.busayolawumi.dev`
 3. In **Project → Settings → Domains**, add `go.busayolawumi.dev`. Since the domain's DNS is on
    Vercel, the record is created automatically.

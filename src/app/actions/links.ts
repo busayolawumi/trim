@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { and, count, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, links } from "@/db";
+import { isUnsafeUrl } from "@/lib/safe-browsing";
 import { requireUser } from "@/lib/session";
 import { normalizeSlug, randomSlug, validateSlug } from "@/lib/slug";
 
@@ -38,6 +39,10 @@ export async function createLink(
 
   if (new URL(url).hostname === shortHost()) {
     return { error: "You can't shorten a Trim link." };
+  }
+
+  if (await isUnsafeUrl(url)) {
+    return { error: "This link goes to a site known to be dangerous, so we can't shorten it." };
   }
 
   const [{ total }] = await db()
