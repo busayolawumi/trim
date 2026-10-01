@@ -1,5 +1,6 @@
 import { logout } from "@/app/actions/auth";
 import { Logo } from "@/components/logo";
+import { TimezoneSync } from "@/components/timezone-sync";
 import { secondaryButtonClass } from "@/components/ui";
 import { requireUser } from "@/lib/session";
 
@@ -20,6 +21,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
         </div>
       </header>
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">{children}</main>
+      <TimezoneSync />
     </div>
   );
 }

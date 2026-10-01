@@ -3,21 +3,13 @@ import { notFound } from "next/navigation";
 import { and, count, desc, eq, sql, type AnyColumn } from "drizzle-orm";
 import { clicks, db, links } from "@/db";
 import { CopyButton } from "@/components/copy-button";
-import { cardClass } from "@/components/ui";
+import { cardClass, secondaryButtonClass } from "@/components/ui";
 import { SHORT_HOST, shortUrl } from "@/lib/config";
+import { countryName } from "@/lib/countries";
 import { requireUser } from "@/lib/session";
+import { getTimezone } from "@/lib/timezone";
 
 const DAYS = 30;
-
-const countryNames = new Intl.DisplayNames(["en"], { type: "region" });
-
-function countryName(code: string) {
-  try {
-    return countryNames.of(code) ?? code;
-  } catch {
-    return code;
-  }
-}
 
 export async function generateMetadata({ params }: PageProps<"/dashboard/[slug]">) {
   return { title: `/${(await params).slug} · Trim` };
@@ -26,6 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/dashboard/[slug]"
 export default async function LinkStatsPage({ params }: PageProps<"/dashboard/[slug]">) {
   const user = await requireUser();
   const { slug } = await params;
+  const tz = await getTimezone();
 
   const [link] = await db()
     .select()
@@ -52,13 +45,19 @@ export default async function LinkStatsPage({ params }: PageProps<"/dashboard/[s
       })
       .from(clicks)
       .where(eq(clicks.linkId, link.id)),
+    // Days are calendar days in the viewer's timezone, ending with their "today".
     db().execute<{ day: string; value: number }>(sql`
+      with today as (select (now() at time zone ${tz})::date as d)
       select to_char(d.day, 'YYYY-MM-DD') as day, count(c.id)::int as value
-      from generate_series(current_date - ${DAYS - 1}::int, current_date, interval '1 day') as d(day)
+      from generate_series(
+        (select d from today) - ${DAYS - 1}::int,
+        (select d from today),
+        interval '1 day'
+      ) as d(day)
       left join ${clicks} c
         on c.link_id = ${link.id}
         and not c.is_bot
-        and c.created_at::date = d.day::date
+        and (c.created_at at time zone ${tz})::date = d.day::date
       group by d.day
       order by d.day
     `),
@@ -90,10 +89,15 @@ export default async function LinkStatsPage({ params }: PageProps<"/dashboard/[s
             → {link.url}
           </a>
           <p className="mt-1 text-xs text-zinc-500">
-            Created {link.createdAt.toLocaleDateString("en", { dateStyle: "medium" })}
+            Created {link.createdAt.toLocaleDateString("en", { dateStyle: "medium", timeZone: tz })}
           </p>
         </div>
-        <CopyButton text={shortUrl(link.slug)} />
+        <div className="flex items-center gap-2">
+          <a href={`/dashboard/${link.slug}/export`} download className={secondaryButtonClass}>
+            Export CSV
+          </a>
+          <CopyButton text={shortUrl(link.slug)} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -125,6 +129,7 @@ export default async function LinkStatsPage({ params }: PageProps<"/dashboard/[s
           <span>{days[0] && formatDay(days[0].day)}</span>
           <span>Today</span>
         </div>
+        <p className="mt-3 text-xs text-zinc-500">Days in your timezone ({tz.replace(/_/g, " ")}).</p>
       </section>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
