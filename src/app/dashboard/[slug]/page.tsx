@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { and, count, desc, eq, sql, type AnyColumn } from "drizzle-orm";
 import { clicks, db, links } from "@/db";
 import { CopyButton } from "@/components/copy-button";
-import { DownloadIcon } from "@/components/icons";
+import { FileDownIcon } from "@/components/icons";
 import { cardClass, iconButtonClass } from "@/components/ui";
 import { shortUrl } from "@/lib/config";
 import { countryName } from "@/lib/countries";
@@ -97,7 +97,7 @@ export default async function LinkStatsPage({ params }: PageProps<"/dashboard/[s
             title="Export clicks as CSV"
             className={iconButtonClass}
           >
-            <DownloadIcon />
+            <FileDownIcon />
           </a>
           <CopyButton text={shortUrl(link.slug)} />
         </div>
