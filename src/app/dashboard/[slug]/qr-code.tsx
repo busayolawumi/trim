@@ -1,5 +1,5 @@
 import { DownloadIcon, QrCodeIcon, XIcon } from "@/components/icons";
-import { cardClass, ghostIconButtonClass, iconButtonClass, secondaryButtonClass } from "@/components/ui";
+import { ghostIconButtonClass, iconButtonClass, modalClass, secondaryButtonClass } from "@/components/ui";
 import { SHORT_HOST } from "@/lib/config";
 import { qrSvg } from "@/lib/qr";
 
@@ -23,13 +23,12 @@ export async function QrCodeButton({ slug }: { slug: string }) {
       >
         <QrCodeIcon />
       </button>
-      {/* No display class here: it would override the browser hiding the closed popover. */}
       <div
         id={POPOVER_ID}
         popover="auto"
         role="dialog"
         aria-labelledby={`${POPOVER_ID}-title`}
-        className={`${cardClass} m-auto w-72 max-w-[calc(100vw-2rem)] text-foreground backdrop:bg-black/40`}
+        className={modalClass}
       >
         <div className="flex items-center justify-between">
           <h2 id={`${POPOVER_ID}-title`} className="font-semibold">
