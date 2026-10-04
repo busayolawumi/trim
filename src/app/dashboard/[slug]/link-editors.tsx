@@ -84,8 +84,8 @@ function RenameForm({ linkId, slug, onCancel }: { linkId: string; slug: string; 
         {message && <span className="text-red-600 dark:text-red-400">✗ {message}</span>}
       </span>
       <p className="text-xs text-amber-700 dark:text-amber-400">
-        Anyone using the old link ({SHORT_HOST}/{slug}) will see that it doesn&apos;t exist.
-        Click history is kept.
+        Anyone using the old link ({SHORT_HOST}/{slug}) or its QR code will see that it doesn&apos;t
+        exist, and someone else could take that name. Click history is kept.
       </p>
     </form>
   );

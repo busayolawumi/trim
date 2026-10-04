@@ -10,6 +10,7 @@ import { countryName } from "@/lib/countries";
 import { requireUser } from "@/lib/session";
 import { getTimezone } from "@/lib/timezone";
 import { LinkDestination, LinkSlug } from "./link-editors";
+import { QrCodeButton } from "./qr-code";
 
 const DAYS = 30;
 
@@ -88,6 +89,7 @@ export default async function LinkStatsPage({ params }: PageProps<"/dashboard/[s
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <QrCodeButton slug={link.slug} />
           <a
             href={`/dashboard/${link.slug}/export`}
             download
