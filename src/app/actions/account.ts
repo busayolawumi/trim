@@ -9,6 +9,7 @@ import { AVATAR_IDS } from "@/lib/avatars";
 import { cancelEmailChange, sendEmailChangeLink } from "@/lib/email-change";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { clearAttempts, isRateLimited, recordAttempt, TOO_MANY, type Limit } from "@/lib/rate-limit";
+import { notifyPasswordChanged } from "@/lib/security-emails";
 import { createSession, deleteSession, requireUser } from "@/lib/session";
 import { emailSchema, nameSchema, passwordSchema } from "@/lib/validation";
 
@@ -119,6 +120,7 @@ export async function changePassword(_: SettingsState, formData: FormData): Prom
   // Links requested before the change shouldn't still work.
   await db().delete(passwordResetTokens).where(eq(passwordResetTokens.userId, user.id));
   await cancelEmailChange(user.id);
+  await notifyPasswordChanged(user.email);
   return { message: "Password changed. Your other devices have been logged out." };
 }
 

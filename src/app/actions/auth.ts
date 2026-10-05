@@ -20,6 +20,7 @@ import {
   TOO_MANY,
   type Limit,
 } from "@/lib/rate-limit";
+import { notifyPasswordChanged } from "@/lib/security-emails";
 import { createSession, deleteSession, requireUser } from "@/lib/session";
 import { emailSchema, nameSchema, passwordSchema } from "@/lib/validation";
 
@@ -176,6 +177,7 @@ export async function resetPassword(_: AuthState, formData: FormData): Promise<A
   // If someone else asked to move the account to their address, a reset stops it.
   await cancelEmailChange(user.id);
   await clearAttempts(`login:email:${user.email}`);
+  await notifyPasswordChanged(user.email);
 
   await createSession(user.id, user.sessionVersion);
   redirect("/dashboard");

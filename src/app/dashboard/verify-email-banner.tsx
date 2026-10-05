@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { resendVerificationEmail } from "@/app/actions/auth";
 import { cardClass, secondaryButtonClass } from "@/components/ui";
@@ -13,6 +14,13 @@ export function VerifyEmailBanner({ email }: { email: string }) {
       <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
         We sent a link to <span className="font-medium">{email}</span>. Check your spam folder if
         it&apos;s not in your inbox.
+      </p>
+      <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
+        Wrong address?{" "}
+        <Link href="/dashboard/settings" className="font-medium underline">
+          Change it in Settings
+        </Link>
+        .
       </p>
       <form action={action} className="mt-4 flex flex-wrap items-center gap-3">
         <button type="submit" disabled={pending} className={secondaryButtonClass}>
