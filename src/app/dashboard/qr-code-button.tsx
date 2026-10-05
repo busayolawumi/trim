@@ -1,42 +1,35 @@
+import Image from "next/image";
 import { DownloadIcon, QrCodeIcon, XIcon } from "@/components/icons";
 import { ghostIconButtonClass, iconButtonClass, modalClass, secondaryButtonClass } from "@/components/ui";
 import { SHORT_HOST } from "@/lib/config";
-import { qrSvg } from "@/lib/qr";
-
-const POPOVER_ID = "qr-code";
 
 /**
  * Button that opens a link's QR code with PNG and SVG downloads. Uses the browser's
  * popover attribute (closes on Escape or a click outside), so it needs no client JavaScript.
+ * The code is a lazy image, so a list of links only fetches the ones that are opened.
  */
-export async function QrCodeButton({ slug }: { slug: string }) {
-  const svg = await qrSvg(slug);
+export function QrCodeButton({ slug }: { slug: string }) {
+  const id = `qr-${slug}`;
 
   return (
     <>
       <button
         type="button"
-        popoverTarget={POPOVER_ID}
-        aria-label="Show QR code"
+        popoverTarget={id}
+        aria-label={`Show QR code for /${slug}`}
         title="QR code"
         className={iconButtonClass}
       >
         <QrCodeIcon />
       </button>
-      <div
-        id={POPOVER_ID}
-        popover="auto"
-        role="dialog"
-        aria-labelledby={`${POPOVER_ID}-title`}
-        className={modalClass}
-      >
+      <div id={id} popover="auto" role="dialog" aria-labelledby={`${id}-title`} className={modalClass}>
         <div className="flex items-center justify-between">
-          <h2 id={`${POPOVER_ID}-title`} className="font-semibold">
+          <h2 id={`${id}-title`} className="font-semibold">
             QR code
           </h2>
           <button
             type="button"
-            popoverTarget={POPOVER_ID}
+            popoverTarget={id}
             popoverTargetAction="hide"
             aria-label="Close"
             title="Close"
@@ -45,13 +38,17 @@ export async function QrCodeButton({ slug }: { slug: string }) {
             <XIcon />
           </button>
         </div>
-        {/* Made by the qrcode library from our own short URL, so it's safe to inline. */}
-        <div
-          role="img"
-          aria-label={`QR code for ${SHORT_HOST}/${slug}`}
-          className="mt-3 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full"
-          dangerouslySetInnerHTML={{ __html: svg }}
-        />
+        {/* White square while it loads; lazy images in a closed popover aren't fetched. */}
+        <div className="mt-3 aspect-square overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800">
+          <Image
+            src={`/dashboard/${slug}/qr?format=svg`}
+            alt={`QR code for ${SHORT_HOST}/${slug}`}
+            width={256}
+            height={256}
+            unoptimized
+            className="block h-auto w-full"
+          />
+        </div>
         <p className="mt-2 truncate text-center font-mono text-sm">
           {SHORT_HOST}/{slug}
         </p>

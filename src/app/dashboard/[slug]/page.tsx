@@ -10,7 +10,7 @@ import { countryName } from "@/lib/countries";
 import { requireUser } from "@/lib/session";
 import { getTimezone } from "@/lib/timezone";
 import { LinkDestination, LinkSlug } from "./link-editors";
-import { QrCodeButton } from "./qr-code";
+import { QrCodeButton } from "../qr-code-button";
 
 const DAYS = 30;
 
