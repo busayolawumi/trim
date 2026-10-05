@@ -1,5 +1,11 @@
-export const inputClass =
-  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-300 dark:focus:ring-zinc-100/10";
+// Border, vertical padding and focus styles shared by text inputs and selects.
+const fieldBase =
+  "rounded-lg border border-zinc-300 bg-white py-2 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-300 dark:focus:ring-zinc-100/10";
+
+export const inputClass = `w-full px-3 ${fieldBase}`;
+
+/** For <Select> (src/components/select.tsx), which adds the chevron that pr-9 leaves room for. */
+export const selectClass = `cursor-pointer appearance-none pl-3 pr-9 ${fieldBase}`;
 
 export const buttonClass =
   "inline-flex items-center justify-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300";
