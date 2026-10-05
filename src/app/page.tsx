@@ -44,6 +44,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         <Link href={user ? "/dashboard" : "/signup"} className={`${buttonClass} mt-8 px-6 py-3`}>
           {user ? "Go to dashboard" : "Get started — it's free"}
         </Link>
+        <p className="mt-6 max-w-sm text-xs text-zinc-500">
+          Not sure where a Trim link goes? Add a <span className="font-mono">+</span> to the end
+          (like <span className="font-mono">{SHORT_HOST}/your-link+</span>) to see it first.
+        </p>
       </section>
     </main>
   );

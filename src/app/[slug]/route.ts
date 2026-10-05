@@ -5,7 +5,16 @@ import { normalizeSlug } from "@/lib/slug";
 import { parseUserAgent, referrerHost } from "@/lib/user-agent";
 
 export async function GET(request: NextRequest, ctx: RouteContext<"/[slug]">) {
-  const slug = normalizeSlug((await ctx.params).slug);
+  const raw = (await ctx.params).slug;
+
+  // A "+" on the end (e.g. /launch+) shows where the link goes instead of going there.
+  // Slugs can't contain "+", so this never shadows a real link, and it isn't counted as a click.
+  if (raw.endsWith("+")) {
+    const target = encodeURIComponent(normalizeSlug(raw.slice(0, -1)));
+    return Response.redirect(new URL(`/${target}/preview`, request.url), 302);
+  }
+
+  const slug = normalizeSlug(raw);
 
   const [link] = await db()
     .select({ id: links.id, url: links.url })
