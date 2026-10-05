@@ -26,6 +26,9 @@ const RESERVED = new Set([
   "static",
   "assets",
   "favicon.ico",
+  "icon",
+  "apple-icon",
+  "opengraph-image",
   "robots.txt",
   "sitemap.xml",
 ]);
