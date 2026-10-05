@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { and, count, eq } from "drizzle-orm";
 import { z } from "zod";
-import { db, links } from "@/db";
+import { db, isUniqueViolation, links } from "@/db";
 import { isUnsafeUrl } from "@/lib/safe-browsing";
 import { requireUser } from "@/lib/session";
 import { normalizeSlug, randomSlug, validateSlug } from "@/lib/slug";
@@ -120,14 +120,6 @@ export async function updateLinkUrl(
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/${row.slug}`);
   return { updated: true };
-}
-
-/** True for Postgres' unique-constraint error, which Drizzle wraps in its own error. */
-function isUniqueViolation(error: unknown) {
-  for (let e = error; e instanceof Error; e = e.cause) {
-    if ((e as { code?: string }).code === "23505") return true;
-  }
-  return false;
 }
 
 /**

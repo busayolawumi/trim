@@ -5,13 +5,23 @@ import { redirect } from "next/navigation";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db, passwordResetTokens, users } from "@/db";
+import { randomAvatar } from "@/lib/avatars";
 import { SHORT_BASE_URL } from "@/lib/config";
 import { sendEmail } from "@/lib/email";
+import { cancelEmailChange } from "@/lib/email-change";
 import { sendVerificationEmail } from "@/lib/email-verification";
 import { fakeVerifyPassword, hashPassword, verifyPassword } from "@/lib/password";
 import { consumeResetToken, createResetToken, RESET_TOKEN_MINUTES } from "@/lib/password-reset";
-import { clearAttempts, clientIp, isRateLimited, recordAttempt, type Limit } from "@/lib/rate-limit";
+import {
+  clearAttempts,
+  clientIp,
+  isRateLimited,
+  recordAttempt,
+  TOO_MANY,
+  type Limit,
+} from "@/lib/rate-limit";
 import { createSession, deleteSession, requireUser } from "@/lib/session";
+import { emailSchema, nameSchema, passwordSchema } from "@/lib/validation";
 
 export type AuthState = { error?: string } | undefined;
 export type ForgotPasswordState = { error?: string; sent?: boolean } | undefined;
@@ -24,13 +34,9 @@ const RESET_PER_EMAIL: Limit = { max: 3, windowMinutes: 60 };
 const RESET_PER_IP: Limit = { max: 5, windowMinutes: 60 };
 const VERIFY_RESEND_PER_USER: Limit = { max: 3, windowMinutes: 60 };
 
-const TOO_MANY = "Too many attempts. Please try again later.";
-
-const passwordSchema = z.string().min(8, "Password must be at least 8 characters.").max(200);
-
 const signupSchema = z.object({
-  name: z.string().trim().min(1, "Enter your name.").max(80),
-  email: z.email("Enter a valid email.").trim().toLowerCase(),
+  name: nameSchema,
+  email: emailSchema,
   password: passwordSchema,
 });
 
@@ -39,9 +45,7 @@ const loginSchema = z.object({
   password: z.string(),
 });
 
-const forgotPasswordSchema = z.object({
-  email: z.email("Enter a valid email.").trim().toLowerCase(),
-});
+const forgotPasswordSchema = z.object({ email: emailSchema });
 
 const resetPasswordSchema = z
   .object({
@@ -62,7 +66,7 @@ export async function signup(_: AuthState, formData: FormData): Promise<AuthStat
   const { name, email, password } = parsed.data;
   const [user] = await db()
     .insert(users)
-    .values({ name, email, passwordHash: await hashPassword(password) })
+    .values({ name, email, passwordHash: await hashPassword(password), avatar: randomAvatar() })
     .onConflictDoNothing({ target: users.email })
     .returning({ id: users.id, sessionVersion: users.sessionVersion });
 
@@ -169,6 +173,8 @@ export async function resetPassword(_: AuthState, formData: FormData): Promise<A
   if (!user) return { error: "This reset link is invalid or has expired. Request a new one." };
 
   await db().delete(passwordResetTokens).where(eq(passwordResetTokens.userId, user.id));
+  // If someone else asked to move the account to their address, a reset stops it.
+  await cancelEmailChange(user.id);
   await clearAttempts(`login:email:${user.email}`);
 
   await createSession(user.id, user.sessionVersion);

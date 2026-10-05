@@ -15,6 +15,20 @@
       "when": 1790884123891,
       "tag": "0001_email_verification",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791156243601,
+      "tag": "0002_email_change",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791229785763,
+      "tag": "0003_avatars",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useTransition, type MouseEvent } from "react";
+import { useRef, useTransition } from "react";
 import { deleteLink } from "@/app/actions/links";
+import { isBackdropClick } from "@/components/dialog";
 import { TrashIcon } from "@/components/icons";
 import {
   dangerButtonClass,
@@ -14,15 +15,6 @@ export function DeleteLinkButton({ linkId, slug }: { linkId: string; slug: strin
   const dialog = useRef<HTMLDialogElement>(null);
   const [pending, startTransition] = useTransition();
   const titleId = `delete-${linkId}-title`;
-
-  // A click on the dimmed backdrop lands on the dialog itself, outside its box.
-  function closeOnBackdrop(e: MouseEvent<HTMLDialogElement>) {
-    if (pending || e.target !== e.currentTarget) return;
-    const box = e.currentTarget.getBoundingClientRect();
-    const outside =
-      e.clientX < box.left || e.clientX > box.right || e.clientY < box.top || e.clientY > box.bottom;
-    if (outside) e.currentTarget.close();
-  }
 
   return (
     <>
@@ -41,7 +33,7 @@ export function DeleteLinkButton({ linkId, slug }: { linkId: string; slug: strin
         aria-labelledby={titleId}
         className={modalClass}
         onCancel={(e) => pending && e.preventDefault()}
-        onClick={closeOnBackdrop}
+        onClick={(e) => !pending && isBackdropClick(e) && e.currentTarget.close()}
       >
         <h2 id={titleId} className="font-semibold">
           Delete /{slug}?

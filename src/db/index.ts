@@ -15,4 +15,12 @@ export function db() {
   return instance;
 }
 
+/** True for Postgres' unique-constraint error, which Drizzle wraps in its own error. */
+export function isUniqueViolation(error: unknown) {
+  for (let e = error; e instanceof Error; e = e.cause) {
+    if ((e as { code?: string }).code === "23505") return true;
+  }
+  return false;
+}
+
 export * from "./schema";

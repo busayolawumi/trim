@@ -57,6 +57,7 @@ export const getCurrentUser = cache(async () => {
       name: users.name,
       email: users.email,
       emailVerifiedAt: users.emailVerifiedAt,
+      avatar: users.avatar,
     })
     .from(users)
     .where(and(eq(users.id, session.userId), eq(users.sessionVersion, session.version)));

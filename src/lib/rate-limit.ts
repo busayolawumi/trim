@@ -6,6 +6,8 @@ import { authAttempts, db } from "@/db";
 
 export type Limit = { max: number; windowMinutes: number };
 
+export const TOO_MANY = "Too many attempts. Please try again later.";
+
 // Keyed hash so stored keys can't be reversed by hashing every IPv4 address or a list of emails.
 function hashKey(key: string) {
   const secret = process.env.SESSION_SECRET;
