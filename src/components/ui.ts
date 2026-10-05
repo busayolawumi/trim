@@ -1,6 +1,12 @@
+/**
+ * Text size for every input and select: 16px on touch screens, because iOS zooms in on any
+ * field smaller than that when it's tapped, and stays zoomed in on the next page (e.g. after
+ * logging in). 14px with a mouse.
+ */
+export const fieldTextClass = "text-base pointer-fine:text-sm";
+
 // Border, vertical padding and focus styles shared by text inputs and selects.
-const fieldBase =
-  "rounded-lg border border-zinc-300 bg-white py-2 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-300 dark:focus:ring-zinc-100/10";
+const fieldBase = `rounded-lg border border-zinc-300 bg-white py-2 ${fieldTextClass} outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-300 dark:focus:ring-zinc-100/10`;
 
 export const inputClass = `w-full px-3 ${fieldBase}`;
 
@@ -21,9 +27,10 @@ export const cardClass =
 
 /**
  * Centred card over a dimmed page, for popovers and <dialog>s. Don't add a display class
- * to the element: it would override the browser hiding it while closed.
+ * to the element: it would override the browser hiding it while closed. Scrolls when taller
+ * than the screen (e.g. the QR panel on a phone held sideways).
  */
-export const modalClass = `${cardClass} m-auto w-80 max-w-[calc(100vw-2rem)] text-foreground backdrop:bg-black/40`;
+export const modalClass = `${cardClass} m-auto max-h-[calc(100dvh-2rem)] w-80 max-w-[calc(100vw-2rem)] overflow-y-auto text-foreground backdrop:bg-black/40`;
 
 // Colours aren't in the shared base: two Tailwind colour classes on one element don't
 // reliably override each other, so each variant sets its own.

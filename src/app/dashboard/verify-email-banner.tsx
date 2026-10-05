@@ -12,7 +12,7 @@ export function VerifyEmailBanner({ email }: { email: string }) {
     <div className={`${cardClass} border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950`}>
       <h2 className="font-semibold">Verify your email to start creating links</h2>
       <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
-        We sent a link to <span className="font-medium">{email}</span>. Check your spam folder if
+        We sent a link to <span className="font-medium wrap-anywhere">{email}</span>. Check your spam folder if
         it&apos;s not in your inbox.
       </p>
       <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">

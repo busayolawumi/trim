@@ -3,6 +3,8 @@
 :root {
   --background: #fafafa;
   --foreground: #18181b;
+  /* Native parts (scrollbars, select menus) follow the light/dark theme too. */
+  color-scheme: light dark;
 }
 
 @theme inline {
@@ -29,6 +31,15 @@ body {
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+
+  /* Tapping a control twice quickly shouldn't zoom the page on phones. Pinch zoom still works. */
+  a,
+  button,
+  input,
+  select,
+  label {
+    touch-action: manipulation;
   }
 }
 

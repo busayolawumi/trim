@@ -166,13 +166,23 @@ export default async function LinkStatsPage({ params, searchParams }: PageProps<
         </h2>
         {/* Thinner gaps for long ranges so 90 bars still fit on a phone. */}
         <div className={`flex h-40 items-end ${bars.length > 40 ? "gap-px" : "gap-1"}`}>
-          {bars.map((d) => (
+          {bars.map((d, i) => (
             <div key={d.day} className="group relative flex h-full flex-1 items-end">
               <div
                 className="w-full rounded-t bg-emerald-500 transition group-hover:bg-emerald-600"
                 style={{ height: `${Math.max((d.value / maxBar) * 100, d.value ? 4 : 1)}%` }}
               />
-              <span className="pointer-events-none absolute bottom-full left-1/2 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded bg-zinc-900 px-2 py-1 text-xs text-white group-hover:block dark:bg-zinc-100 dark:text-zinc-900">
+              {/* Centred over the bar, except near the ends, where it would stick out past the
+                  screen edge on a phone. */}
+              <span
+                className={`pointer-events-none absolute bottom-full mb-1 hidden whitespace-nowrap rounded bg-zinc-900 px-2 py-1 text-xs text-white group-hover:block dark:bg-zinc-100 dark:text-zinc-900 ${
+                  i < bars.length / 3
+                    ? "left-0"
+                    : i >= (bars.length * 2) / 3
+                      ? "right-0"
+                      : "left-1/2 -translate-x-1/2"
+                }`}
+              >
                 {UNITS[unit].format(d.day)}: {d.value}
               </span>
             </div>
@@ -229,7 +239,7 @@ function RangePicker({ slug, current }: { slug: string; current: Range }) {
           replace
           scroll={false}
           aria-current={r === current ? "page" : undefined}
-          className={`whitespace-nowrap rounded-md px-2 py-1 text-center transition sm:px-3 ${
+          className={`whitespace-nowrap rounded-md px-2 py-1.5 text-center transition sm:px-3 sm:py-1 ${
             r === current
               ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
               : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
@@ -270,13 +280,13 @@ function Breakdown({
       ) : (
         <ul className="flex flex-col gap-2">
           {rows.map((r) => (
-            <li key={r.label} className="relative flex justify-between overflow-hidden rounded px-2 py-1 text-sm">
+            <li key={r.label} className="relative flex justify-between gap-3 overflow-hidden rounded px-2 py-1 text-sm">
               <span
                 className="absolute inset-y-0 left-0 bg-emerald-500/15"
                 style={{ width: `${(r.value / max) * 100}%` }}
               />
-              <span className="relative truncate">{r.label}</span>
-              <span className="relative tabular-nums text-zinc-600 dark:text-zinc-400">{r.value}</span>
+              <span className="relative truncate" title={r.label}>{r.label}</span>
+              <span className="relative shrink-0 tabular-nums text-zinc-600 dark:text-zinc-400">{r.value}</span>
             </li>
           ))}
         </ul>

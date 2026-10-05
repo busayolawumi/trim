@@ -17,7 +17,7 @@ export default async function ConfirmEmailPage({ searchParams }: PageProps<"/con
           title: "Email changed",
           body: (
             <>
-              Your Trim account now uses <span className="font-medium">{result.email}</span>. Use it
+              Your Trim account now uses <span className="font-medium wrap-anywhere">{result.email}</span>. Use it
               the next time you log in.
             </>
           ),

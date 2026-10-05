@@ -74,7 +74,7 @@ export function LinkList({ links }: { links: LinkRow[] }) {
           No links yet. Shorten your first one above.
         </p>
       ) : shown.length === 0 ? (
-        <p className={`${cardClass} text-center text-sm text-zinc-500`}>
+        <p className={`${cardClass} text-center text-sm wrap-anywhere text-zinc-500`}>
           No links match &ldquo;{query.trim()}&rdquo;.
         </p>
       ) : (
@@ -84,9 +84,11 @@ export function LinkList({ links }: { links: LinkRow[] }) {
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/dashboard/${link.slug}`}
-                  className="font-mono text-sm font-medium hover:underline"
+                  className="font-mono text-sm font-medium wrap-anywhere hover:underline"
                 >
-                  {SHORT_HOST}/{link.slug}
+                  {/* Long names wrap on phones, after the slash if possible. */}
+                  {SHORT_HOST}/<wbr />
+                  {link.slug}
                 </Link>
                 <p className="truncate text-sm text-zinc-500" title={link.url}>
                   → {link.url}

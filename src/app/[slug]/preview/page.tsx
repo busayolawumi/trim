@@ -33,7 +33,7 @@ export default async function LinkPreviewPage({ params }: PageProps<"/[slug]/pre
       </div>
       <div className={`${cardClass} w-full max-w-md`}>
         <h1 className="text-lg font-semibold">Where this link goes</h1>
-        <p className="mt-4 font-mono text-sm text-zinc-500">
+        <p className="mt-4 font-mono text-sm wrap-anywhere text-zinc-500">
           {SHORT_HOST}/{slug}
         </p>
         <p className="my-1 text-zinc-400" aria-hidden>
@@ -43,7 +43,7 @@ export default async function LinkPreviewPage({ params }: PageProps<"/[slug]/pre
         <p className="mt-1 break-all font-mono text-xs text-zinc-500">{link.url}</p>
 
         {/* A plain <a>, not <Link>: prefetching the short link would count as a click. */}
-        <a href={`/${slug}`} rel="noreferrer" className={`${buttonClass} mt-6 w-full`}>
+        <a href={`/${slug}`} rel="noreferrer" className={`${buttonClass} mt-6 w-full text-center wrap-anywhere`}>
           Continue to {host}
         </a>
         <p className="mt-4 text-xs text-zinc-500">

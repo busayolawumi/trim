@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { createLink, type CreateLinkState } from "@/app/actions/links";
 import { CopyButton } from "@/components/copy-button";
-import { buttonClass, cardClass, inputClass } from "@/components/ui";
+import { buttonClass, cardClass, fieldTextClass, inputClass } from "@/components/ui";
 import { SHORT_HOST, shortUrl } from "@/lib/config";
 import { useSlugAvailability } from "./use-slug-availability";
 
@@ -47,7 +47,10 @@ export function CreateLinkForm() {
         </label>
 
         <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Short name <span className="font-normal text-zinc-500">(optional — leave blank for a random one)</span>
+          {/* One span, so the hint follows the label instead of getting its own row in the column. */}
+          <span>
+            Short name <span className="font-normal text-zinc-500">(optional — leave blank for a random one)</span>
+          </span>
           <div className="flex items-stretch overflow-hidden rounded-lg border border-zinc-300 focus-within:border-zinc-900 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:border-zinc-700 dark:focus-within:border-zinc-300">
             <span className="flex items-center bg-zinc-100 px-3 font-mono text-xs text-zinc-500 dark:bg-zinc-800">
               {SHORT_HOST}/
@@ -59,7 +62,10 @@ export function CreateLinkForm() {
               maxLength={50}
               placeholder="my-link"
               autoComplete="off"
-              className="min-w-0 flex-1 bg-white px-3 py-2 font-mono text-sm outline-none dark:bg-zinc-900"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              className={`min-w-0 flex-1 bg-white px-3 py-2 font-mono ${fieldTextClass} outline-none dark:bg-zinc-900`}
             />
           </div>
           <span className="min-h-5 text-xs font-normal">
@@ -88,7 +94,7 @@ export function CreateLinkForm() {
 
       {state?.created && (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-emerald-50 px-4 py-3 dark:bg-emerald-950">
-          <span className="font-mono text-sm text-emerald-800 dark:text-emerald-200">
+          <span className="min-w-0 font-mono text-sm wrap-anywhere text-emerald-800 dark:text-emerald-200">
             {shortUrl(state.created)}
           </span>
           <CopyButton text={shortUrl(state.created)} />

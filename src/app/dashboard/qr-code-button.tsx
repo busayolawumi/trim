@@ -66,8 +66,9 @@ export function QrCodeButton({ slug }: { slug: string }) {
           className="mt-3 aspect-square overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full"
           dangerouslySetInnerHTML={svg ? { __html: svg } : undefined}
         />
-        <p className="mt-2 truncate text-center font-mono text-sm">
-          {SHORT_HOST}/{slug}
+        <p className="mt-2 text-center font-mono text-sm wrap-anywhere">
+          {SHORT_HOST}/<wbr />
+          {slug}
         </p>
         <div className="mt-4 grid grid-cols-2 gap-2">
           <a href={`/dashboard/${slug}/qr`} download className={`${secondaryButtonClass} gap-2`}>

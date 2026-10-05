@@ -26,7 +26,7 @@ export default function OpengraphImage() {
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <BrandMark size={64} />
           <div style={{ display: "flex", fontSize: 52, letterSpacing: -1.5 }}>
-            trim<span style={{ color: "#10b981" }}>.</span>
+            Trim<span style={{ color: "#10b981" }}>.</span>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>

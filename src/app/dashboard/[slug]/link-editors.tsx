@@ -8,7 +8,13 @@ import {
   type UpdateLinkState,
 } from "@/app/actions/links";
 import { PencilIcon } from "@/components/icons";
-import { buttonClass, ghostIconButtonClass, inputClass, secondaryButtonClass } from "@/components/ui";
+import {
+  buttonClass,
+  fieldTextClass,
+  ghostIconButtonClass,
+  inputClass,
+  secondaryButtonClass,
+} from "@/components/ui";
 import { SHORT_HOST } from "@/lib/config";
 import { useSlugAvailability } from "../use-slug-availability";
 
@@ -22,8 +28,10 @@ export function LinkSlug({ linkId, slug }: { linkId: string; slug: string }) {
 
   return (
     <div className="flex min-w-0 items-center gap-1">
-      <h1 className="truncate font-mono text-lg font-semibold">
-        {SHORT_HOST}/{slug}
+      {/* Wraps instead of truncating: on a phone the host alone nearly fills the line. */}
+      <h1 className="min-w-0 font-mono text-base font-semibold wrap-anywhere sm:text-lg">
+        {SHORT_HOST}/<wbr />
+        {slug}
       </h1>
       <button
         type="button"
@@ -66,8 +74,11 @@ function RenameForm({ linkId, slug, onCancel }: { linkId: string; slug: string; 
             maxLength={50}
             autoFocus
             autoComplete="off"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             aria-label="New short name"
-            className="min-w-0 flex-1 bg-white px-3 py-2 font-mono text-sm outline-none dark:bg-zinc-900"
+            className={`min-w-0 flex-1 bg-white px-3 py-2 font-mono ${fieldTextClass} outline-none dark:bg-zinc-900`}
           />
         </div>
         <FormButtons
@@ -83,7 +94,7 @@ function RenameForm({ linkId, slug, onCancel }: { linkId: string; slug: string; 
         )}
         {message && <span className="text-red-600 dark:text-red-400">✗ {message}</span>}
       </span>
-      <p className="text-xs text-amber-700 dark:text-amber-400">
+      <p className="text-xs wrap-anywhere text-amber-700 dark:text-amber-400">
         Anyone using the old link ({SHORT_HOST}/{slug}) or its QR code will see that it doesn&apos;t
         exist, and someone else could take that name. Click history is kept.
       </p>

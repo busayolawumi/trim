@@ -26,7 +26,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
       {typeof missing === "string" && (
         <p className="mt-8 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
-          <span className="font-mono">{SHORT_HOST}/{missing}</span> doesn&apos;t exist.
+          <span className="font-mono wrap-anywhere">{SHORT_HOST}/{missing}</span> doesn&apos;t exist.
         </p>
       )}
 

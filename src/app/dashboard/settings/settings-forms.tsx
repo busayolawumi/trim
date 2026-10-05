@@ -110,7 +110,7 @@ export function EmailForm({
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm">
-        <span className="font-medium">{email}</span>{" "}
+        <span className="font-medium wrap-anywhere">{email}</span>{" "}
         {verified ? (
           <span className="text-emerald-700 dark:text-emerald-400">· Verified</span>
         ) : (
@@ -119,7 +119,7 @@ export function EmailForm({
       </p>
       {pendingEmail && (
         <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
-          Waiting for you to confirm <span className="font-medium">{pendingEmail}</span>. Your email
+          Waiting for you to confirm <span className="font-medium wrap-anywhere">{pendingEmail}</span>. Your email
           won&apos;t change until you open the link we sent there.
         </p>
       )}

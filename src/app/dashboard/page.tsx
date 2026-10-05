@@ -27,7 +27,7 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Hi, {user.name.split(" ")[0]}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight wrap-anywhere">Hi, {user.name.split(" ")[0]}</h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Create short links and track how often they&apos;re clicked.
         </p>

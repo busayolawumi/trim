@@ -35,7 +35,7 @@ export function DeleteLinkButton({ linkId, slug }: { linkId: string; slug: strin
         onCancel={(e) => pending && e.preventDefault()}
         onClick={(e) => !pending && isBackdropClick(e) && e.currentTarget.close()}
       >
-        <h2 id={titleId} className="font-semibold">
+        <h2 id={titleId} className="font-semibold wrap-anywhere">
           Delete /{slug}?
         </h2>
         <p className="mt-2 text-sm text-zinc-500">
