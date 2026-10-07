@@ -1,5 +1,6 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { BrandMark } from "@/components/brand-mark";
 import { SHORT_HOST } from "@/lib/config";
 
 // The card shown when a Trim page (not a short link, which redirects) is shared in chat or social
@@ -8,7 +9,10 @@ export const alt = "Trim: short links with a name you choose, and stats on who c
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function OpengraphImage() {
+export default async function OpengraphImage() {
+  // The logo is the tab icon file, so it's only drawn in one place.
+  const mark = await readFile(join(process.cwd(), "public/favicon.svg"), "base64");
+
   return new ImageResponse(
     (
       <div
@@ -24,7 +28,7 @@ export default function OpengraphImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <BrandMark size={64} />
+          <img src={`data:image/svg+xml;base64,${mark}`} width={64} height={64} alt="" />
           <div style={{ display: "flex", fontSize: 52, letterSpacing: -1.5 }}>
             Trim<span style={{ color: "#10b981" }}>.</span>
           </div>

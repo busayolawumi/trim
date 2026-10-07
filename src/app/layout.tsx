@@ -20,7 +20,16 @@ export const metadata: Metadata = {
   metadataBase: new URL(SHORT_BASE_URL),
   title: "Trim",
   description,
-  openGraph: { siteName: "Trim", title: "Trim", description, type: "website" },
+  // Browsers that can show SVG icons use the SVG (sharp at any size); the PNG is for the rest.
+  // Both PNGs are exports of public/favicon.svg, so re-export them if it changes.
+  icons: {
+    icon: [
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  openGraph:{ siteName: "Trim", title: "Trim", description, type: "website" },
   // X uses the Open Graph image; this asks for the large card.
   twitter: { card: "summary_large_image" },
 };

@@ -18,9 +18,8 @@ const nextConfig: NextConfig = {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
   async rewrites() {
-    // Some apps fetch /favicon.ico directly. A favicon.ico file can't be generated in code,
-    // so serve the PNG from src/app/icon.tsx there.
-    return [{ source: "/favicon.ico", destination: "/icon" }];
+    // Some apps fetch /favicon.ico directly, so serve the PNG icon there.
+    return [{ source: "/favicon.ico", destination: "/favicon-32.png" }];
   },
 };
 
