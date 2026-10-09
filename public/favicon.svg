@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 4 24 24">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="2 2 28 28">
   <!-- Open scissors (for "trim"): handles in the logo's emerald, blades white on dark tab bars
        and near-black on light ones. Drawn on a 24px grid (handles left, blades right), scaled
-       to fit; the viewBox crops to the scissors. -->
+       to fit; the viewBox leaves a little space round them so they match other sites' icons. -->
   <style>
     @media (prefers-color-scheme: light) {
       .blades { stroke: #18181b; }
