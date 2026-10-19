@@ -151,3 +151,61 @@ export function ChevronDownIcon(props: IconProps) {
     </Icon>
   );
 }
+
+export function BarChartIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M18 20V10" />
+      <path d="M12 20V4" />
+      <path d="M6 20v-6" />
+    </Icon>
+  );
+}
+
+export function CalendarIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M3 10h18" />
+    </Icon>
+  );
+}
+
+export function CornerDownRightIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m15 10 5 5-5 5" />
+      <path d="M4 4v7a4 4 0 0 0 4 4h12" />
+    </Icon>
+  );
+}
+
+export function ArrowLeftIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m12 19-7-7 7-7" />
+      <path d="M19 12H5" />
+    </Icon>
+  );
+}
+
+export function LinkIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </Icon>
+  );
+}
+
+export function TypeIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 7V4h16v3" />
+      <path d="M9 20h6" />
+      <path d="M12 4v16" />
+    </Icon>
+  );
+}

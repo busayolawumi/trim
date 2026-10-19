@@ -32,6 +32,8 @@ export const links = pgTable(
     // Always stored lowercase so slugs are case-insensitive.
     slug: text("slug").notNull().unique(),
     url: text("url").notNull(),
+    // The user's own name for the link. Null shows the destination's domain instead.
+    title: text("title"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("links_user_id_idx").on(t.userId)],
@@ -52,6 +54,26 @@ export const clicks = pgTable(
     isBot: boolean("is_bot").notNull().default(false),
   },
   (t) => [index("clicks_link_id_created_at_idx").on(t.linkId, t.createdAt)],
+);
+
+// History of a link, shown at the bottom of its stats page. Written in the same statement as the
+// change itself (src/app/actions/links.ts). Links made before this table existed have a "created"
+// row with no value, since their original destination wasn't recorded.
+export const linkEvents = pgTable(
+  "link_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    linkId: uuid("link_id")
+      .notNull()
+      .references(() => links.id, { onDelete: "cascade" }),
+    // "created" (newValue = destination), or "destination", "slug" or "title" (oldValue -> newValue;
+    // a title can be null on either side).
+    type: text("type", { enum: ["created", "destination", "slug", "title"] }).notNull(),
+    oldValue: text("old_value"),
+    newValue: text("new_value"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("link_events_link_id_created_at_idx").on(t.linkId, t.createdAt)],
 );
 
 // One row per login/signup/reset attempt, used for rate limiting. Keys are HMACs, never raw IPs or emails.

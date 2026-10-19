@@ -1,6 +1,7 @@
 import { and, count, desc, eq } from "drizzle-orm";
 import { clicks, db, links } from "@/db";
 import { requireUser } from "@/lib/session";
+import { getTimezone } from "@/lib/timezone";
 import { CreateLinkForm } from "./create-link-form";
 import { LinkList } from "./link-list";
 import { VerifyEmailBanner } from "./verify-email-banner";
@@ -8,13 +9,14 @@ import { VerifyEmailBanner } from "./verify-email-banner";
 export const metadata = { title: "Dashboard · Trim" };
 
 export default async function DashboardPage() {
-  const user = await requireUser();
+  const [user, timeZone] = await Promise.all([requireUser(), getTimezone()]);
 
   const rows = await db()
     .select({
       id: links.id,
       slug: links.slug,
       url: links.url,
+      title: links.title,
       createdAt: links.createdAt,
       clicks: count(clicks.id),
     })
@@ -35,7 +37,7 @@ export default async function DashboardPage() {
 
       {user.emailVerifiedAt ? <CreateLinkForm /> : <VerifyEmailBanner email={user.email} />}
 
-      <LinkList links={rows} />
+      <LinkList links={rows} timeZone={timeZone} />
     </div>
   );
 }

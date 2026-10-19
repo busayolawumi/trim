@@ -29,6 +29,20 @@
       "when": 1791229785763,
       "tag": "0003_avatars",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792446099971,
+      "tag": "0004_link_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792449220151,
+      "tag": "0005_link_titles",
+      "breakpoints": true
     }
   ]
 }

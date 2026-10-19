@@ -11,7 +11,16 @@ import {
   secondaryButtonClass,
 } from "@/components/ui";
 
-export function DeleteLinkButton({ linkId, slug }: { linkId: string; slug: string }) {
+export function DeleteLinkButton({
+  linkId,
+  slug,
+  buttonClassName = dangerIconButtonClass,
+}: {
+  linkId: string;
+  slug: string;
+  /** Overrides the bordered red button style. */
+  buttonClassName?: string;
+}) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [pending, startTransition] = useTransition();
   const titleId = `delete-${linkId}-title`;
@@ -22,7 +31,7 @@ export function DeleteLinkButton({ linkId, slug }: { linkId: string; slug: strin
         type="button"
         aria-label={`Delete /${slug}`}
         title="Delete"
-        className={dangerIconButtonClass}
+        className={buttonClassName}
         onClick={() => dialog.current?.showModal()}
       >
         <TrashIcon />

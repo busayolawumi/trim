@@ -5,11 +5,13 @@ import { createLink, type CreateLinkState } from "@/app/actions/links";
 import { CopyButton } from "@/components/copy-button";
 import { buttonClass, cardClass, fieldTextClass, inputClass } from "@/components/ui";
 import { SHORT_HOST, shortUrl } from "@/lib/config";
+import { TITLE_MAX_LENGTH } from "@/lib/link-title";
 import { useSlugAvailability } from "./use-slug-availability";
 
 export function CreateLinkForm() {
   const [url, setUrl] = useState("");
   const [slug, setSlug] = useState("");
+  const [title, setTitle] = useState("");
 
   const [state, action, pending] = useActionState(
     async (prev: CreateLinkState, formData: FormData) => {
@@ -17,6 +19,7 @@ export function CreateLinkForm() {
       if (result?.created) {
         setUrl("");
         setSlug("");
+        setTitle("");
       }
       return result;
     },
@@ -44,6 +47,23 @@ export function CreateLinkForm() {
             placeholder="https://example.com/a/very/long/link"
             className={inputClass}
           />
+        </label>
+
+        <label className="flex flex-col gap-1.5 text-sm font-medium">
+          <span>
+            Title <span className="font-normal text-zinc-500">(optional — only you see it)</span>
+          </span>
+          <input
+            name="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={TITLE_MAX_LENGTH}
+            placeholder="e.g. Portfolio"
+            className={inputClass}
+          />
+          {state?.titleError && (
+            <span className="text-xs font-normal text-red-600 dark:text-red-400">{state.titleError}</span>
+          )}
         </label>
 
         <label className="flex flex-col gap-1.5 text-sm font-medium">

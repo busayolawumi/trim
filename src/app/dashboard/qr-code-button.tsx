@@ -8,9 +8,10 @@ import { QR_OPTIONS } from "@/lib/qr-options";
 
 /**
  * Button that opens a link's QR code with PNG and SVG downloads. The panel uses the browser's
- * popover attribute (closes on Escape or a click outside).
+ * popover attribute (closes on Escape or a click outside). `buttonClassName` overrides the
+ * bordered button style.
  */
-export function QrCodeButton({ slug }: { slug: string }) {
+export function QrCodeButton({ slug, buttonClassName = iconButtonClass }: { slug: string; buttonClassName?: string }) {
   const id = `qr-${slug}`;
   const [svg, setSvg] = useState<string | null>(null);
   const started = useRef(false);
@@ -39,7 +40,7 @@ export function QrCodeButton({ slug }: { slug: string }) {
         onClick={prepare}
         aria-label={`Show QR code for /${slug}`}
         title="QR code"
-        className={iconButtonClass}
+        className={buttonClassName}
       >
         <QrCodeIcon />
       </button>

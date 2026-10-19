@@ -3,11 +3,13 @@
 import { useActionState, useState } from "react";
 import {
   renameLink,
+  updateLinkTitle,
   updateLinkUrl,
   type RenameLinkState,
   type UpdateLinkState,
 } from "@/app/actions/links";
-import { PencilIcon } from "@/components/icons";
+import { CopyButton } from "@/components/copy-button";
+import { CornerDownRightIcon, PencilIcon } from "@/components/icons";
 import {
   buttonClass,
   fieldTextClass,
@@ -15,12 +17,71 @@ import {
   inputClass,
   secondaryButtonClass,
 } from "@/components/ui";
-import { SHORT_HOST } from "@/lib/config";
+import { SHORT_HOST, shortUrl } from "@/lib/config";
+import { TITLE_MAX_LENGTH } from "@/lib/link-title";
 import { useSlugAvailability } from "../use-slug-availability";
 
 // Each form is mounted fresh when editing starts, so an old error never shows on reopening.
 
-/** The short link's name, with an edit icon that swaps in a rename form. */
+/** The link's title, or a prompt to add one, with an edit icon that swaps in a form. */
+export function LinkTitle({ linkId, title }: { linkId: string; title: string | null }) {
+  const [editing, setEditing] = useState(false);
+
+  if (editing) return <TitleForm linkId={linkId} title={title} onDone={() => setEditing(false)} />;
+
+  return (
+    <div className="flex min-w-0 items-center gap-1">
+      {title ? (
+        <p className="min-w-0 wrap-anywhere">{title}</p>
+      ) : (
+        <p className="text-zinc-500">No title. The domain is shown instead.</p>
+      )}
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        aria-label={title ? "Edit title" : "Add title"}
+        title={title ? "Edit title" : "Add title"}
+        className={ghostIconButtonClass}
+      >
+        <PencilIcon size={15} />
+      </button>
+    </div>
+  );
+}
+
+function TitleForm({ linkId, title, onDone }: { linkId: string; title: string | null; onDone: () => void }) {
+  const [value, setValue] = useState(title ?? "");
+  const [state, action, pending] = useActionState(
+    async (prev: UpdateLinkState, formData: FormData) => {
+      const result = await updateLinkTitle(linkId, prev, formData);
+      if (result?.updated) onDone();
+      return result;
+    },
+    undefined,
+  );
+
+  return (
+    <form action={action} className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <input
+          name="title"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          maxLength={TITLE_MAX_LENGTH}
+          autoFocus
+          placeholder="e.g. Portfolio"
+          aria-label="Title"
+          className={inputClass}
+        />
+        <FormButtons pending={pending} disabled={value.trim() === (title ?? "")} onCancel={onDone} />
+      </div>
+      {state?.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
+      <p className="text-xs text-zinc-500">Only you see this. Leave it empty to show the domain instead.</p>
+    </form>
+  );
+}
+
+/** The short link, with copy and an edit icon that swaps in a rename form. */
 export function LinkSlug({ linkId, slug }: { linkId: string; slug: string }) {
   const [editing, setEditing] = useState(false);
 
@@ -28,11 +89,18 @@ export function LinkSlug({ linkId, slug }: { linkId: string; slug: string }) {
 
   return (
     <div className="flex min-w-0 items-center gap-1">
-      {/* Wraps instead of truncating: on a phone the host alone nearly fills the line. */}
-      <h1 className="min-w-0 font-mono text-base font-semibold wrap-anywhere sm:text-lg">
+      {/* Wraps instead of truncating: on a phone the host alone nearly fills the line. Opens the
+          preview page, so checking the link from here isn't counted as a click. */}
+      <a
+        href={`/${slug}/preview`}
+        target="_blank"
+        title="Open preview"
+        className="mr-1 min-w-0 text-lg font-semibold wrap-anywhere text-blue-600 hover:underline sm:text-xl dark:text-blue-400"
+      >
         {SHORT_HOST}/<wbr />
         {slug}
-      </h1>
+      </a>
+      <CopyButton text={shortUrl(slug)} ghost />
       <button
         type="button"
         onClick={() => setEditing(true)}
@@ -102,16 +170,19 @@ function RenameForm({ linkId, slug, onCancel }: { linkId: string; slug: string; 
   );
 }
 
-/** A link's destination ("→ https://…"), with an edit icon that swaps in a form. */
+/** A link's destination ("↳ https://…"), with an edit icon that swaps in a form. */
 export function LinkDestination({ linkId, url }: { linkId: string; url: string }) {
   const [editing, setEditing] = useState(false);
 
   if (editing) return <DestinationForm linkId={linkId} url={url} onDone={() => setEditing(false)} />;
 
   return (
-    <div className="flex min-w-0 items-center gap-1 text-sm text-zinc-500">
+    <div className="flex min-w-0 items-center gap-2 text-zinc-700 dark:text-zinc-300">
+      <span className="shrink-0 text-zinc-500">
+        <CornerDownRightIcon />
+      </span>
       <a href={url} target="_blank" rel="noreferrer" className="truncate hover:underline" title={url}>
-        → {url}
+        {url}
       </a>
       <button
         type="button"

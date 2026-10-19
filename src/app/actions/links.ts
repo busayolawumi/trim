@@ -2,9 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, sql } from "drizzle-orm";
 import { z } from "zod";
-import { db, isUniqueViolation, links } from "@/db";
+import { db, isUniqueViolation, linkEvents, links } from "@/db";
+import { normalizeTitle } from "@/lib/link-title";
 import { isUnsafeUrl } from "@/lib/safe-browsing";
 import { requireUser } from "@/lib/session";
 import { normalizeSlug, randomSlug, validateSlug } from "@/lib/slug";
@@ -12,7 +13,7 @@ import { normalizeSlug, randomSlug, validateSlug } from "@/lib/slug";
 const MAX_LINKS_PER_USER = 100;
 
 export type CreateLinkState =
-  | { error?: string; slugError?: string; created?: string }
+  | { error?: string; slugError?: string; titleError?: string; created?: string }
   | undefined;
 
 export type UpdateLinkState = { error?: string; updated?: boolean } | undefined;
@@ -60,6 +61,10 @@ export async function createLink(
   if ("error" in checked) return checked;
   const { url } = checked;
 
+  const named = normalizeTitle(String(formData.get("title") ?? ""));
+  if ("error" in named) return { titleError: named.error };
+  const { title } = named;
+
   const [{ total }] = await db()
     .select({ total: count() })
     .from(links)
@@ -75,12 +80,12 @@ export async function createLink(
     const slugError = validateSlug(requested);
     if (slugError) return { slugError };
 
-    slug = await insertLink(user.id, requested, url);
+    slug = await insertLink(user.id, requested, url, title);
     if (!slug) return { slugError: `"${requested}" is already taken.` };
   } else {
     // Retry on the rare collision with an existing random slug.
     for (let attempt = 0; attempt < 5 && !slug; attempt++) {
-      slug = await insertLink(user.id, randomSlug(), url);
+      slug = await insertLink(user.id, randomSlug(), url, title);
     }
     if (!slug) return { error: "Couldn't generate a short link. Please try again." };
   }
@@ -89,13 +94,54 @@ export async function createLink(
   return { created: slug };
 }
 
-async function insertLink(userId: string, slug: string, url: string) {
-  const [row] = await db()
-    .insert(links)
-    .values({ userId, slug, url })
-    .onConflictDoNothing({ target: links.slug })
-    .returning({ slug: links.slug });
-  return row?.slug ?? null;
+/** Inserts the link and its "created" history entry together. Null if the slug is taken. */
+async function insertLink(userId: string, slug: string, url: string, title: string | null) {
+  const { rows } = await db().execute<{ slug: string }>(sql`
+    with inserted as (
+      insert into ${links} (user_id, slug, url, title) values (${userId}, ${slug}, ${url}, ${title})
+      on conflict (slug) do nothing
+      returning id, slug
+    ), logged as (
+      insert into ${linkEvents} (link_id, type, new_value) select id, 'created', ${url} from inserted
+    )
+    select slug from inserted
+  `);
+  return rows[0]?.slug ?? null;
+}
+
+// Each editable column and the link_events type its changes are logged as.
+const EDITABLE = {
+  url: { column: links.url, event: "destination" },
+  slug: { column: links.slug, event: "slug" },
+  title: { column: links.title, event: "title" },
+} as const;
+
+/**
+ * Sets one column of the user's link and logs the change in link_events, in one statement so the
+ * history can't miss a change. Saving the same value again isn't logged. Returns the link's slug
+ * after the change, or null if the link isn't the user's.
+ */
+async function changeLink(
+  userId: string,
+  linkId: string,
+  field: keyof typeof EDITABLE,
+  value: string | null,
+) {
+  const { column, event } = EDITABLE[field];
+  const { rows } = await db().execute<{ slug: string }>(sql`
+    with old as (
+      select id, ${column} as old_value from ${links} where id = ${linkId} and user_id = ${userId}
+    ), updated as (
+      update ${links} set ${sql.identifier(field)} = ${value} from old where ${links.id} = old.id
+      returning ${links.id} as id, ${links.slug} as slug, old.old_value
+    ), logged as (
+      insert into ${linkEvents} (link_id, type, old_value, new_value)
+      select id, ${event}, old_value, ${value} from updated
+      where old_value is distinct from ${value}
+    )
+    select slug from updated
+  `);
+  return rows[0]?.slug ?? null;
 }
 
 /** Changes where a link points. The slug (and its click history) stays the same. */
@@ -110,15 +156,31 @@ export async function updateLinkUrl(
   const checked = await checkDestination(String(formData.get("url") ?? ""));
   if ("error" in checked) return checked;
 
-  const [row] = await db()
-    .update(links)
-    .set({ url: checked.url })
-    .where(and(eq(links.id, linkId), eq(links.userId, user.id)))
-    .returning({ slug: links.slug });
-  if (!row) return { error: "Link not found." };
+  const newSlug = await changeLink(user.id, linkId, "url", checked.url);
+  if (!newSlug) return { error: "Link not found." };
 
   revalidatePath("/dashboard");
-  revalidatePath(`/dashboard/${row.slug}`);
+  revalidatePath(`/dashboard/${newSlug}`);
+  return { updated: true };
+}
+
+/** Sets or clears (empty) the link's title. */
+export async function updateLinkTitle(
+  linkId: string,
+  _: UpdateLinkState,
+  formData: FormData,
+): Promise<UpdateLinkState> {
+  const user = await requireUser();
+  if (!linkIdSchema.safeParse(linkId).success) return { error: "Link not found." };
+
+  const named = normalizeTitle(String(formData.get("title") ?? ""));
+  if ("error" in named) return named;
+
+  const slug = await changeLink(user.id, linkId, "title", named.title);
+  if (!slug) return { error: "Link not found." };
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/${slug}`);
   return { updated: true };
 }
 
@@ -138,21 +200,17 @@ export async function renameLink(
   const slugError = validateSlug(slug);
   if (slugError) return { error: slugError };
 
-  let row: { slug: string } | undefined;
+  let newSlug: string | null;
   try {
-    [row] = await db()
-      .update(links)
-      .set({ slug })
-      .where(and(eq(links.id, linkId), eq(links.userId, user.id)))
-      .returning({ slug: links.slug });
+    newSlug = await changeLink(user.id, linkId, "slug", slug);
   } catch (error) {
     if (isUniqueViolation(error)) return { error: `"${slug}" is already taken.` };
     throw error;
   }
-  if (!row) return { error: "Link not found." };
+  if (!newSlug) return { error: "Link not found." };
 
   revalidatePath("/dashboard");
-  redirect(`/dashboard/${row.slug}`);
+  redirect(`/dashboard/${newSlug}`);
 }
 
 export async function deleteLink(linkId: string) {

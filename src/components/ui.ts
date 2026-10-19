@@ -46,6 +46,18 @@ export const dangerIconButtonClass = `${iconButtonBase} border-red-300 text-red-
 /** Green variant for confirming success, e.g. after copying. */
 export const successIconButtonClass = `${iconButtonBase} border-emerald-300 text-emerald-600 dark:border-emerald-800 dark:text-emerald-400`;
 
+const ghostIconButtonBase = "inline-flex shrink-0 items-center justify-center rounded-md transition";
+const ghostHover =
+  "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100";
+
 /** Small borderless icon button for inline actions, e.g. edit next to a value. */
-export const ghostIconButtonClass =
-  "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100";
+export const ghostIconButtonClass = `${ghostIconButtonBase} h-7 w-7 ${ghostHover}`;
+
+/** Green variant of the small borderless button, for confirming success, e.g. after copying. */
+export const successGhostIconButtonClass = `${ghostIconButtonBase} h-7 w-7 text-emerald-600 dark:text-emerald-400`;
+
+/** Borderless 36px icon button for a row of actions, e.g. on each dashboard link. */
+export const rowIconButtonClass = `${ghostIconButtonBase} h-9 w-9 rounded-lg ${ghostHover}`;
+
+/** Red-on-hover variant of the row button, for delete. */
+export const dangerRowIconButtonClass = `${ghostIconButtonBase} h-9 w-9 rounded-lg text-zinc-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400`;
