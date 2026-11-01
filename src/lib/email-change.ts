@@ -9,7 +9,7 @@ import {
   passwordResetTokens,
   users,
 } from "@/db";
-import { SHORT_BASE_URL } from "@/lib/config";
+import { APP_BASE_URL } from "@/lib/config";
 import { sendEmail } from "@/lib/email";
 import { hashToken, newToken } from "@/lib/tokens";
 
@@ -29,7 +29,7 @@ export async function sendEmailChangeLink(userId: string, newEmail: string) {
       expiresAt: sql`now() + make_interval(hours => ${CHANGE_TOKEN_HOURS})`,
     });
 
-  const link = `${SHORT_BASE_URL}/confirm-email?token=${token}`;
+  const link = `${APP_BASE_URL}/confirm-email?token=${token}`;
   await sendEmail({
     to: newEmail,
     subject: "Confirm your new email for Trim",

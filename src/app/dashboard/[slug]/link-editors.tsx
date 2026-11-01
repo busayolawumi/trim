@@ -96,7 +96,7 @@ export function LinkSlug({ linkId, slug }: { linkId: string; slug: string }) {
       {/* Wraps instead of truncating: on a phone the host alone nearly fills the line. Opens the
           preview page, so checking the link from here isn't counted as a click. */}
       <a
-        href={`/${slug}/preview`}
+        href={`${shortUrl(slug)}/preview`}
         target="_blank"
         title="Open preview"
         className="mr-1 min-w-0 text-lg font-semibold wrap-anywhere text-blue-600 hover:underline sm:text-xl dark:text-blue-400"

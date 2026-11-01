@@ -134,7 +134,7 @@ function LinkItem({ link, timeZone }: { link: LinkRow; timeZone: string }) {
         <div className="mt-1 flex items-center gap-1">
           {/* The preview page, so opening it from here isn't counted as a click. */}
           <a
-            href={`/${link.slug}/preview`}
+            href={`${shortUrl(link.slug)}/preview`}
             target="_blank"
             title="Open preview"
             className="min-w-0 font-medium wrap-anywhere text-blue-600 hover:underline dark:text-blue-400"

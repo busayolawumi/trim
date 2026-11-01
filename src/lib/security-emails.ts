@@ -1,6 +1,6 @@
 import "server-only";
 import { after } from "next/server";
-import { SHORT_BASE_URL } from "@/lib/config";
+import { APP_BASE_URL } from "@/lib/config";
 import { sendEmail } from "@/lib/email";
 import { getTimezone } from "@/lib/timezone";
 
@@ -21,7 +21,7 @@ export async function notifyPasswordChanged(email: string) {
         `The password for your Trim account (${email}) was changed on ${when} (${tz.replace(/_/g, " ")}).\n\n` +
         `If this was you, there's nothing else to do.\n\n` +
         `If it wasn't, reset your password now. That also logs out every device:\n` +
-        `${SHORT_BASE_URL}/forgot-password`,
+        `${APP_BASE_URL}/forgot-password`,
     }),
   );
 }

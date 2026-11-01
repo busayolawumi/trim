@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/toaster";
-import { SHORT_BASE_URL } from "@/lib/config";
+import { APP_BASE_URL } from "@/lib/config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,7 +18,7 @@ const description = "Shorten links and see who clicks them.";
 
 export const metadata: Metadata = {
   // Makes the share image's URL absolute, as chat and social apps require.
-  metadataBase: new URL(SHORT_BASE_URL),
+  metadataBase: new URL(APP_BASE_URL),
   title: "Trim",
   description,
   // Browsers that can show SVG icons use the SVG (sharp at any size, no background, blades that

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { and, count, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db, isUniqueViolation, linkEvents, links } from "@/db";
+import { APP_BASE_URL, SHORT_BASE_URL } from "@/lib/config";
 import { setFlash } from "@/lib/flash";
 import { normalizeTitle } from "@/lib/link-title";
 import { isUnsafeUrl } from "@/lib/safe-browsing";
@@ -26,13 +27,7 @@ const urlSchema = z
 
 const linkIdSchema = z.uuid();
 
-function shortHost() {
-  try {
-    return new URL(process.env.NEXT_PUBLIC_SHORT_BASE_URL ?? "").hostname;
-  } catch {
-    return null;
-  }
-}
+const TRIM_HOSTNAMES = new Set([SHORT_BASE_URL, APP_BASE_URL].map((url) => new URL(url).hostname));
 
 /** Checks a destination URL for both new and edited links. */
 async function checkDestination(raw: string): Promise<{ url: string } | { error: string }> {
@@ -40,7 +35,7 @@ async function checkDestination(raw: string): Promise<{ url: string } | { error:
   if (!parsedUrl.success) return { error: parsedUrl.error.issues[0].message };
   const url = parsedUrl.data;
 
-  if (new URL(url).hostname === shortHost()) {
+  if (TRIM_HOSTNAMES.has(new URL(url).hostname)) {
     return { error: "You can't shorten a Trim link." };
   }
 

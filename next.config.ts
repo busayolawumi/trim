@@ -13,7 +13,37 @@ const securityHeaders = [
   // would change what destination sites see. Vercel already sends Strict-Transport-Security.
 ];
 
+// The website's own pages. On the short-link domain they redirect to the app's domain, so a
+// new top-level page needs adding here.
+const APP_PATHS = [
+  "/",
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+  "/confirm-email",
+  "/dashboard/:path*",
+  "/api/:path*",
+];
+
 const nextConfig: NextConfig = {
+  async redirects() {
+    const short = process.env.NEXT_PUBLIC_SHORT_BASE_URL;
+    const app = process.env.NEXT_PUBLIC_APP_BASE_URL;
+    if (!short || !app) return [];
+    const shortHost = new URL(short).hostname;
+    const appUrl = new URL(app);
+    if (shortHost === appUrl.hostname) return [];
+
+    return APP_PATHS.map((source) => ({
+      source,
+      has: [{ type: "host" as const, value: shortHost }],
+      destination: `${appUrl.origin}${source}`,
+      // Temporary, so browsers don't cache it if the domains ever change.
+      permanent: false,
+    }));
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

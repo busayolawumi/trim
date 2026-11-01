@@ -1,6 +1,6 @@
 # Trim
 
-A link shortener with click tracking. Live at `go.busayolawumi.dev`.
+A link shortener with click tracking. Live at `trim.bsyo.dev`, with short links on `go.bsyo.dev`.
 
 - Sign up, paste a long URL, and choose a short name (or get a random one)
 - The short name is checked for availability as you type
@@ -36,9 +36,14 @@ scrypt password hashing + a signed JWT session cookie (`jose`). Runs on Vercel's
    - `SESSION_SECRET`
    - `RESEND_API_KEY` and `EMAIL_FROM` (password reset emails; the sending domain must be verified in Resend)
    - `SAFE_BROWSING_API_KEY` (Google Safe Browsing; new links to known phishing/malware are refused)
-   - `NEXT_PUBLIC_SHORT_BASE_URL=https://go.busayolawumi.dev`
-3. In **Project → Settings → Domains**, add `go.busayolawumi.dev`. Since the domain's DNS is on
-   Vercel, the record is created automatically.
+   - `NEXT_PUBLIC_SHORT_BASE_URL=https://go.bsyo.dev` (short links and QR codes)
+   - `NEXT_PUBLIC_APP_BASE_URL=https://trim.bsyo.dev` (the site, and the links in emails)
+
+   Both are baked in at build time, so redeploy after changing them.
+3. In **Project → Settings → Domains**, add both `trim.bsyo.dev` and `go.bsyo.dev` to this project.
+   If the domain's DNS is on Vercel, the records are created automatically; otherwise add the CNAME
+   records Vercel shows at your DNS provider. On `go.bsyo.dev`, the website's pages redirect to
+   `trim.bsyo.dev` (`redirects()` in `next.config.ts`); short links work on both.
 
 ## Database changes
 

@@ -6,7 +6,7 @@ import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db, passwordResetTokens, users } from "@/db";
 import { randomAvatar } from "@/lib/avatars";
-import { SHORT_BASE_URL } from "@/lib/config";
+import { APP_BASE_URL } from "@/lib/config";
 import { sendEmail } from "@/lib/email";
 import { cancelEmailChange } from "@/lib/email-change";
 import { sendVerificationEmail } from "@/lib/email-verification";
@@ -142,7 +142,7 @@ export async function requestPasswordReset(
     if (!user) return;
 
     const token = await createResetToken(user.id);
-    const link = `${SHORT_BASE_URL}/reset-password?token=${token}`;
+    const link = `${APP_BASE_URL}/reset-password?token=${token}`;
     await sendEmail({
       to: email,
       subject: "Reset your Trim password",

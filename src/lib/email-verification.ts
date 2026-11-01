@@ -1,7 +1,7 @@
 import "server-only";
 import { and, eq, gt, isNull, lt, sql } from "drizzle-orm";
 import { db, emailVerificationTokens, users } from "@/db";
-import { SHORT_BASE_URL } from "@/lib/config";
+import { APP_BASE_URL } from "@/lib/config";
 import { sendEmail } from "@/lib/email";
 import { hashToken, newToken } from "@/lib/tokens";
 
@@ -22,7 +22,7 @@ export async function sendVerificationEmail(userId: string, email: string) {
       expiresAt: sql`now() + make_interval(hours => ${VERIFY_TOKEN_HOURS})`,
     });
 
-  const link = `${SHORT_BASE_URL}/verify-email?token=${token}`;
+  const link = `${APP_BASE_URL}/verify-email?token=${token}`;
   await sendEmail({
     to: email,
     subject: "Verify your email for Trim",
