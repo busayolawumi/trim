@@ -35,12 +35,17 @@ function esc(text: string) {
     .replace(/'/g, "&#39;");
 }
 
+/** Zero-width breaks stop mail apps turning addresses into mailto links. Takes escaped text. */
+function unlink(html: string) {
+  return html.replace(/@/g, "@&zwnj;").replace(/\./g, "&zwnj;.");
+}
+
 function highlighted(text: string, highlight?: string) {
   const safe = esc(text);
   if (!highlight) return safe;
   return safe.replace(
     esc(highlight),
-    () => `<strong class="text-strong" style="color:#09090b;font-weight:600;">${esc(highlight)}</strong>`,
+    () => `<strong class="text-strong" style="color:#09090b;font-weight:600;">${unlink(esc(highlight))}</strong>`,
   );
 }
 
@@ -48,6 +53,10 @@ function highlighted(text: string, highlight?: string) {
 // where the client supports prefers-color-scheme, e.g. Apple Mail. Others apply their own dark mode.
 const STYLE = `
 :root { color-scheme: light dark; supported-color-schemes: light dark; }
+a[x-apple-data-detectors] {
+  color: inherit !important; text-decoration: none !important; font-size: inherit !important;
+  font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important;
+}
 @media (max-width: 620px) {
   .pad { padding-left: 24px !important; padding-right: 24px !important; }
   .heading { font-size: 24px !important; }
@@ -83,7 +92,7 @@ function details(rows: [string, string][]) {
       const border = i < rows.length - 1 ? "border-bottom:1px solid #f4f4f5;" : "";
       return `<tr>
 <td class="text-muted divider" style="padding:14px 0 14px 20px;${border}font-family:${FONT};font-size:14px;color:#71717a;text-align:left;">${esc(label)}</td>
-<td class="text-strong divider" style="padding:14px 20px 14px 16px;${border}font-family:${FONT};font-size:14px;font-weight:500;color:#09090b;text-align:right;overflow-wrap:anywhere;word-break:break-word;">${esc(value)}</td>
+<td class="text-strong divider" style="padding:14px 20px 14px 16px;${border}font-family:${FONT};font-size:14px;font-weight:500;color:#09090b;text-align:right;overflow-wrap:anywhere;word-break:break-word;">${unlink(esc(value))}</td>
 </tr>`;
     })
     .join("");
@@ -120,6 +129,7 @@ function renderHtml(c: EmailContent) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <meta name="supported-color-schemes" content="light dark">
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no">
 <title>${esc(c.subject)}</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
 <style>${STYLE}</style>
