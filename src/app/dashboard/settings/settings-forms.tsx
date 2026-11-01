@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useOptimistic, useState } from "react";
+import { sileo } from "sileo";
 import {
   changePassword,
   logOutOtherDevices,
@@ -17,12 +18,24 @@ import { AVATARS } from "@/lib/avatars";
 const formClass = "flex flex-col gap-4 sm:max-w-sm";
 const labelClass = "flex flex-col gap-1.5 text-sm font-medium";
 
-function Status({ state }: { state: SettingsState }) {
-  if (state?.error) return <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>;
-  if (state?.message)
-    return <p className="text-sm text-emerald-700 dark:text-emerald-400">{state.message}</p>;
-  return null;
+function FormError({ state }: { state: SettingsState }) {
+  return state?.error ? <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p> : null;
 }
+
+/** Errors stay next to the form; success is a toast. */
+function withToast(action: (prev: SettingsState, formData: FormData) => Promise<SettingsState>) {
+  return async (prev: SettingsState, formData: FormData) => {
+    const result = await action(prev, formData);
+    if (result?.message) sileo.success({ title: result.message, description: result.detail });
+    return result;
+  };
+}
+
+const updateNameWithToast = withToast(updateName);
+const changePasswordWithToast = withToast(changePassword);
+const logOutOtherDevicesWithToast = withToast(logOutOtherDevices);
+const requestEmailChangeWithToast = withToast(requestEmailChange);
+const updateAvatarWithToast = withToast(updateAvatar);
 
 /** Clicking an avatar saves it straight away; the highlight moves before the server replies. */
 export function AvatarPicker({ current }: { current: string }) {
@@ -30,7 +43,7 @@ export function AvatarPicker({ current }: { current: string }) {
   const [state, action, pending] = useActionState(
     async (prev: SettingsState, formData: FormData) => {
       setSelected(String(formData.get("avatar")));
-      return updateAvatar(prev, formData);
+      return updateAvatarWithToast(prev, formData);
     },
     undefined,
   );
@@ -54,13 +67,13 @@ export function AvatarPicker({ current }: { current: string }) {
           </button>
         ))}
       </div>
-      <Status state={state} />
+      <FormError state={state} />
     </form>
   );
 }
 
 export function NameForm({ name }: { name: string }) {
-  const [state, action, pending] = useActionState(updateName, undefined);
+  const [state, action, pending] = useActionState(updateNameWithToast, undefined);
   // Controlled so it survives the form reset after submitting.
   const [value, setValue] = useState(name);
 
@@ -78,7 +91,7 @@ export function NameForm({ name }: { name: string }) {
           className={inputClass}
         />
       </label>
-      <Status state={state} />
+      <FormError state={state} />
       <div>
         <button type="submit" disabled={pending || value.trim() === name} className={buttonClass}>
           {pending ? "Saving…" : "Save"}
@@ -100,7 +113,7 @@ export function EmailForm({
   const [newEmail, setNewEmail] = useState("");
   const [state, action, pending] = useActionState(
     async (prev: SettingsState, formData: FormData) => {
-      const result = await requestEmailChange(prev, formData);
+      const result = await requestEmailChangeWithToast(prev, formData);
       if (!result?.error) setNewEmail("");
       return result;
     },
@@ -140,7 +153,7 @@ export function EmailForm({
           Current password
           <PasswordInput name="password" required autoComplete="current-password" />
         </label>
-        <Status state={state} />
+        <FormError state={state} />
         <div>
           <button type="submit" disabled={pending} className={buttonClass}>
             {pending ? "Sending…" : "Send confirmation link"}
@@ -152,7 +165,7 @@ export function EmailForm({
 }
 
 export function PasswordForm() {
-  const [state, action, pending] = useActionState(changePassword, undefined);
+  const [state, action, pending] = useActionState(changePasswordWithToast, undefined);
 
   return (
     <form action={action} className={formClass}>
@@ -168,7 +181,7 @@ export function PasswordForm() {
         Confirm new password
         <PasswordInput name="confirmPassword" required minLength={8} autoComplete="new-password" />
       </label>
-      <Status state={state} />
+      <FormError state={state} />
       <div>
         <button type="submit" disabled={pending} className={buttonClass}>
           {pending ? "Saving…" : "Change password"}
@@ -179,14 +192,14 @@ export function PasswordForm() {
 }
 
 export function LogOutOthersForm() {
-  const [state, action, pending] = useActionState(logOutOtherDevices, undefined);
+  const [state, action, pending] = useActionState(logOutOtherDevicesWithToast, undefined);
 
   return (
     <form action={action} className="flex flex-col items-start gap-3">
       <button type="submit" disabled={pending} className={secondaryButtonClass}>
         {pending ? "Logging out…" : "Log out other devices"}
       </button>
-      <Status state={state} />
+      <FormError state={state} />
     </form>
   );
 }

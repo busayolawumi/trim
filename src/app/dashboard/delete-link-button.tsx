@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useTransition } from "react";
+import { sileo } from "sileo";
 import { deleteLink } from "@/app/actions/links";
 import { isBackdropClick } from "@/components/dialog";
 import { TrashIcon } from "@/components/icons";
@@ -63,12 +64,22 @@ export function DeleteLinkButton({
           <button
             type="button"
             disabled={pending}
-            onClick={() =>
+            onClick={() => {
+              // Closed straight away: an open modal would cover the toast.
+              dialog.current?.close();
               startTransition(async () => {
-                await deleteLink(linkId);
-                dialog.current?.close();
-              })
-            }
+                await sileo
+                  .promise(deleteLink(linkId), {
+                    loading: { title: "Deleting link…", description: `/${slug}` },
+                    success: { title: "Link deleted", description: `/${slug}` },
+                    error: {
+                      title: "Couldn't delete link",
+                      description: "Check your connection and try again.",
+                    },
+                  })
+                  .catch(() => {});
+              });
+            }}
             className={dangerButtonClass}
           >
             {pending ? "Deleting…" : "Delete"}

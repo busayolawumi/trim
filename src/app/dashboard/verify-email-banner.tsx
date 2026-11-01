@@ -2,11 +2,18 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
+import { sileo } from "sileo";
 import { resendVerificationEmail } from "@/app/actions/auth";
 import { cardClass, secondaryButtonClass } from "@/components/ui";
 
 export function VerifyEmailBanner({ email }: { email: string }) {
-  const [state, action, pending] = useActionState(resendVerificationEmail, undefined);
+  const [state, action, pending] = useActionState(async () => {
+    const result = await resendVerificationEmail();
+    if (result?.sent) {
+      sileo.success({ title: "Email sent", description: `Check ${email}, and your spam folder.` });
+    }
+    return result;
+  }, undefined);
 
   return (
     <div className={`${cardClass} border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950`}>
@@ -26,9 +33,6 @@ export function VerifyEmailBanner({ email }: { email: string }) {
         <button type="submit" disabled={pending} className={secondaryButtonClass}>
           {pending ? "Sending…" : "Resend email"}
         </button>
-        {state?.sent && (
-          <span className="text-sm text-emerald-700 dark:text-emerald-400">Sent! Check your inbox.</span>
-        )}
         {state?.error && <span className="text-sm text-red-600 dark:text-red-400">{state.error}</span>}
       </form>
     </div>

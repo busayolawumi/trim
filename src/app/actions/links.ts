@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { and, count, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db, isUniqueViolation, linkEvents, links } from "@/db";
+import { setFlash } from "@/lib/flash";
 import { normalizeTitle } from "@/lib/link-title";
 import { isUnsafeUrl } from "@/lib/safe-browsing";
 import { requireUser } from "@/lib/session";
@@ -210,6 +211,7 @@ export async function renameLink(
   if (!newSlug) return { error: "Link not found." };
 
   revalidatePath("/dashboard");
+  await setFlash("renamed");
   redirect(`/dashboard/${newSlug}`);
 }
 

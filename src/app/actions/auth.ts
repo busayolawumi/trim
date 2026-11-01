@@ -10,6 +10,7 @@ import { SHORT_BASE_URL } from "@/lib/config";
 import { sendEmail } from "@/lib/email";
 import { cancelEmailChange } from "@/lib/email-change";
 import { sendVerificationEmail } from "@/lib/email-verification";
+import { setFlash } from "@/lib/flash";
 import { fakeVerifyPassword, hashPassword, verifyPassword } from "@/lib/password";
 import { consumeResetToken, createResetToken, RESET_TOKEN_MINUTES } from "@/lib/password-reset";
 import {
@@ -75,6 +76,7 @@ export async function signup(_: AuthState, formData: FormData): Promise<AuthStat
 
   after(() => sendVerificationEmail(user.id, email));
   await createSession(user.id, user.sessionVersion);
+  await setFlash("signed-up");
   redirect("/dashboard");
 }
 
@@ -106,11 +108,13 @@ export async function login(_: AuthState, formData: FormData): Promise<AuthState
 
   await clearAttempts(emailKey);
   await createSession(user.id, user.sessionVersion);
+  await setFlash("logged-in");
   redirect("/dashboard");
 }
 
 export async function logout() {
   await deleteSession();
+  await setFlash("logged-out");
   redirect("/login");
 }
 
@@ -180,6 +184,7 @@ export async function resetPassword(_: AuthState, formData: FormData): Promise<A
   await notifyPasswordChanged(user.email);
 
   await createSession(user.id, user.sessionVersion);
+  await setFlash("password-reset");
   redirect("/dashboard");
 }
 

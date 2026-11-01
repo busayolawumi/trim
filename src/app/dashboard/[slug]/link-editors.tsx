@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { sileo } from "sileo";
 import {
   renameLink,
   updateLinkTitle,
@@ -54,7 +55,10 @@ function TitleForm({ linkId, title, onDone }: { linkId: string; title: string | 
   const [state, action, pending] = useActionState(
     async (prev: UpdateLinkState, formData: FormData) => {
       const result = await updateLinkTitle(linkId, prev, formData);
-      if (result?.updated) onDone();
+      if (result?.updated) {
+        onDone();
+        sileo.success({ title: "Title saved" });
+      }
       return result;
     },
     undefined,
@@ -202,7 +206,10 @@ function DestinationForm({ linkId, url, onDone }: { linkId: string; url: string;
   const [state, action, pending] = useActionState(
     async (prev: UpdateLinkState, formData: FormData) => {
       const result = await updateLinkUrl(linkId, prev, formData);
-      if (result?.updated) onDone();
+      if (result?.updated) {
+        onDone();
+        sileo.success({ title: "Destination updated" });
+      }
       return result;
     },
     undefined,

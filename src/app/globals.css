@@ -43,6 +43,58 @@ body {
   }
 }
 
+/*
+ * Toasts (sileo) styled like the cards: white in light mode, zinc-900 in dark, with the app's
+ * colours. Sileo's own theme is left unset because it inverts them (dark toasts on light pages).
+ */
+[data-sileo-viewport] {
+  --toast-fill: #fff;
+  --sileo-state-success: var(--color-emerald-700);
+  --sileo-state-error: var(--color-red-600);
+  --sileo-state-warning: var(--color-amber-600);
+  --sileo-state-info: var(--color-blue-600);
+  --sileo-state-action: var(--color-blue-600);
+  --sileo-state-loading: var(--color-zinc-500);
+}
+
+[data-sileo-pill],
+[data-sileo-body] {
+  fill: var(--toast-fill);
+}
+
+[data-sileo-svg] {
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.08)) drop-shadow(0 4px 12px rgb(0 0 0 / 0.1));
+}
+
+/* Sileo capitalises every word; the rest of the app uses sentence case. */
+[data-sileo-viewport] [data-sileo-title] {
+  text-transform: none;
+}
+
+[data-sileo-viewport] [data-sileo-description] {
+  color: var(--color-zinc-600);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-sileo-viewport] {
+    --toast-fill: var(--color-zinc-900);
+    --sileo-state-success: var(--color-emerald-400);
+    --sileo-state-error: var(--color-red-400);
+    --sileo-state-warning: var(--color-amber-400);
+    --sileo-state-info: var(--color-blue-400);
+    --sileo-state-action: var(--color-blue-400);
+    --sileo-state-loading: var(--color-zinc-400);
+  }
+
+  [data-sileo-svg] {
+    filter: drop-shadow(0 0 1px var(--color-zinc-700)) drop-shadow(0 4px 12px rgb(0 0 0 / 0.5));
+  }
+
+  [data-sileo-viewport] [data-sileo-description] {
+    color: var(--color-zinc-400);
+  }
+}
+
 /* Edge adds its own reveal button; PasswordInput has one already. */
 input::-ms-reveal {
   display: none;

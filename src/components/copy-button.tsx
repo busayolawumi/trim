@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { sileo } from "sileo";
 import { CheckIcon, CopyIcon } from "@/components/icons";
 import {
   ghostIconButtonClass,
@@ -28,7 +29,7 @@ export function CopyButton({ text, ghost = false }: { text: string; ghost?: bool
       title={label}
       className={className}
       onClick={async () => {
-        await navigator.clipboard.writeText(text);
+        if (!(await copyText(text))) return;
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
@@ -36,4 +37,16 @@ export function CopyButton({ text, ghost = false }: { text: string; ghost?: bool
       {copied ? <CheckIcon size={ghost ? 16 : 18} /> : <CopyIcon size={ghost ? 16 : 18} />}
     </button>
   );
+}
+
+/** Copies with a toast either way. Returns whether it worked. */
+export async function copyText(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    sileo.error({ title: "Couldn't copy", description: "Your browser blocked access to the clipboard." });
+    return false;
+  }
+  sileo.success({ title: "Link copied", description: text });
+  return true;
 }

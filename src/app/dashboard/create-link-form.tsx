@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { sileo } from "sileo";
 import { createLink, type CreateLinkState } from "@/app/actions/links";
-import { CopyButton } from "@/components/copy-button";
+import { CopyButton, copyText } from "@/components/copy-button";
 import { buttonClass, cardClass, fieldTextClass, inputClass } from "@/components/ui";
 import { SHORT_HOST, shortUrl } from "@/lib/config";
 import { TITLE_MAX_LENGTH } from "@/lib/link-title";
@@ -20,6 +21,12 @@ export function CreateLinkForm() {
         setUrl("");
         setSlug("");
         setTitle("");
+        const link = shortUrl(result.created);
+        sileo.success({
+          title: "Link created",
+          description: link,
+          button: { title: "Copy link", onClick: () => copyText(link) },
+        });
       }
       return result;
     },

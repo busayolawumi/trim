@@ -7,13 +7,15 @@ import { z } from "zod";
 import { db, passwordResetTokens, users } from "@/db";
 import { AVATAR_IDS } from "@/lib/avatars";
 import { cancelEmailChange, sendEmailChangeLink } from "@/lib/email-change";
+import { setFlash } from "@/lib/flash";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { clearAttempts, isRateLimited, recordAttempt, TOO_MANY, type Limit } from "@/lib/rate-limit";
 import { notifyPasswordChanged } from "@/lib/security-emails";
 import { createSession, deleteSession, requireUser } from "@/lib/session";
 import { emailSchema, nameSchema, passwordSchema } from "@/lib/validation";
 
-export type SettingsState = { error?: string; message?: string } | undefined;
+/** `message` and `detail` are shown as a toast's title and description. */
+export type SettingsState = { error?: string; message?: string; detail?: string } | undefined;
 
 // Same as failed logins, so a stolen session can't be used to guess the password.
 const PASSWORD_CHECK_PER_USER: Limit = { max: 5, windowMinutes: 15 };
@@ -67,7 +69,7 @@ export async function updateName(_: SettingsState, formData: FormData): Promise<
 
   await db().update(users).set({ name: parsed.data }).where(eq(users.id, user.id));
   revalidatePath("/dashboard/settings");
-  return { message: "Saved." };
+  return { message: "Name saved" };
 }
 
 export async function updateAvatar(_: SettingsState, formData: FormData): Promise<SettingsState> {
@@ -78,7 +80,7 @@ export async function updateAvatar(_: SettingsState, formData: FormData): Promis
   await db().update(users).set({ avatar: parsed.data }).where(eq(users.id, user.id));
   // The header shows it on every dashboard page.
   revalidatePath("/dashboard", "layout");
-  return undefined;
+  return { message: "Avatar updated" };
 }
 
 /** Emails a confirmation link to the new address. The email only changes once it's opened. */
@@ -105,7 +107,10 @@ export async function requestEmailChange(
   await recordAttempt(key);
   await sendEmailChangeLink(user.id, email);
   revalidatePath("/dashboard/settings");
-  return { message: `Link sent to ${email}.` };
+  return {
+    message: "Confirmation link sent",
+    detail: `Open the link we sent to ${email} to finish changing your email.`,
+  };
 }
 
 export async function changePassword(_: SettingsState, formData: FormData): Promise<SettingsState> {
@@ -121,13 +126,13 @@ export async function changePassword(_: SettingsState, formData: FormData): Prom
   await db().delete(passwordResetTokens).where(eq(passwordResetTokens.userId, user.id));
   await cancelEmailChange(user.id);
   await notifyPasswordChanged(user.email);
-  return { message: "Password changed. Your other devices have been logged out." };
+  return { message: "Password changed", detail: "Your other devices have been logged out." };
 }
 
 export async function logOutOtherDevices(): Promise<SettingsState> {
   const user = await requireUser();
   await rotateSession(user.id);
-  return { message: "Logged out on all other devices." };
+  return { message: "Logged out other devices" };
 }
 
 export async function deleteAccount(_: SettingsState, formData: FormData): Promise<SettingsState> {
@@ -138,5 +143,6 @@ export async function deleteAccount(_: SettingsState, formData: FormData): Promi
   // Links, clicks and tokens are deleted with the user (ON DELETE CASCADE).
   await db().delete(users).where(eq(users.id, user.id));
   await deleteSession();
+  await setFlash("account-deleted");
   redirect("/");
 }
