@@ -3,6 +3,7 @@ import { and, eq, gt, isNull, lt, sql } from "drizzle-orm";
 import { db, emailVerificationTokens, users } from "@/db";
 import { APP_BASE_URL } from "@/lib/config";
 import { sendEmail } from "@/lib/email";
+import { renderEmail } from "@/lib/email-template";
 import { hashToken, newToken } from "@/lib/tokens";
 
 const VERIFY_TOKEN_HOURS = 24;
@@ -25,10 +26,17 @@ export async function sendVerificationEmail(userId: string, email: string) {
   const link = `${APP_BASE_URL}/verify-email?token=${token}`;
   await sendEmail({
     to: email,
-    subject: "Verify your email for Trim",
-    text:
-      `Welcome to Trim! Confirm this is your email address to start creating short links:\n${link}\n\n` +
-      `The link expires in ${VERIFY_TOKEN_HOURS} hours. If you didn't sign up for Trim, you can ignore this email.`,
+    ...renderEmail({
+      subject: "Verify your email for Trim",
+      preheader: "Confirm your address to start creating short links.",
+      hero: "verify",
+      heroAlt: "Envelope with a tick",
+      heading: "Confirm your email",
+      intro: "Welcome to Trim. Confirm this is your address and you can start creating short links.",
+      button: { label: "Verify email", url: link },
+      expiry: `Expires in ${VERIFY_TOKEN_HOURS} hours`,
+      footer: "If you didn't sign up for Trim, you can ignore this email.",
+    }),
   });
 }
 

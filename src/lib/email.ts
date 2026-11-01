@@ -1,9 +1,9 @@
 import "server-only";
 
-type Email = { to: string; subject: string; text: string };
+type Email = { to: string; subject: string; text: string; html?: string };
 
 /** Sends an email through Resend's HTTP API. Without an API key in development, logs it instead. */
-export async function sendEmail({ to, subject, text }: Email) {
+export async function sendEmail({ to, subject, text, html }: Email) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
 
@@ -18,7 +18,7 @@ export async function sendEmail({ to, subject, text }: Email) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from, to, subject, text }),
+    body: JSON.stringify({ from, to, subject, text, html }),
   });
   if (!res.ok) throw new Error(`Resend responded ${res.status}: ${await res.text()}`);
 }

@@ -1,5 +1,4 @@
 import "server-only";
-import { after } from "next/server";
 import { and, eq, gt, lt, ne, sql } from "drizzle-orm";
 import {
   db,
@@ -11,6 +10,8 @@ import {
 } from "@/db";
 import { APP_BASE_URL } from "@/lib/config";
 import { sendEmail } from "@/lib/email";
+import { renderEmail } from "@/lib/email-template";
+import { notifyEmailChanged } from "@/lib/security-emails";
 import { hashToken, newToken } from "@/lib/tokens";
 
 const CHANGE_TOKEN_HOURS = 24;
@@ -32,11 +33,18 @@ export async function sendEmailChangeLink(userId: string, newEmail: string) {
   const link = `${APP_BASE_URL}/confirm-email?token=${token}`;
   await sendEmail({
     to: newEmail,
-    subject: "Confirm your new email for Trim",
-    text:
-      `Someone (hopefully you) asked to use this address for their Trim account.\n\n` +
-      `Confirm it here (the link expires in ${CHANGE_TOKEN_HOURS} hours):\n${link}\n\n` +
-      `If you didn't ask for this, you can ignore this email. Nothing will change.`,
+    ...renderEmail({
+      subject: "Confirm your new email for Trim",
+      preheader: "Confirm this address to finish changing your Trim email.",
+      hero: "confirm-email",
+      heroAlt: "Envelope with an at sign and an arrow",
+      heading: "Confirm your new email",
+      intro: `Someone, hopefully you, asked to use ${newEmail} for their Trim account. Your email only changes once you confirm.`,
+      introHighlight: newEmail,
+      button: { label: "Confirm new email", url: link },
+      expiry: `Expires in ${CHANGE_TOKEN_HOURS} hours`,
+      footer: "If you didn't ask for this, you can ignore this email. Nothing will change.",
+    }),
   });
 }
 
@@ -102,15 +110,6 @@ export async function confirmEmailChange(token: string): Promise<EmailChangeResu
   await db().delete(emailVerificationTokens).where(eq(emailVerificationTokens.userId, row.userId));
   await db().delete(passwordResetTokens).where(eq(passwordResetTokens.userId, row.userId));
 
-  // After responding, so a failed send doesn't turn a completed change into an error page.
-  after(() =>
-    sendEmail({
-      to: row.currentEmail,
-      subject: "Your Trim email was changed",
-      text:
-        `The email for your Trim account was changed from ${row.currentEmail} to ${row.newEmail}.\n\n` +
-        `If you didn't make this change, someone else may know your password.`,
-    }),
-  );
+  await notifyEmailChanged(row.currentEmail, row.newEmail);
   return { status: "changed", email: row.newEmail };
 }

@@ -8,6 +8,7 @@ import { db, passwordResetTokens, users } from "@/db";
 import { randomAvatar } from "@/lib/avatars";
 import { APP_BASE_URL } from "@/lib/config";
 import { sendEmail } from "@/lib/email";
+import { renderEmail } from "@/lib/email-template";
 import { cancelEmailChange } from "@/lib/email-change";
 import { sendVerificationEmail } from "@/lib/email-verification";
 import { setFlash } from "@/lib/flash";
@@ -145,11 +146,18 @@ export async function requestPasswordReset(
     const link = `${APP_BASE_URL}/reset-password?token=${token}`;
     await sendEmail({
       to: email,
-      subject: "Reset your Trim password",
-      text:
-        `Someone (hopefully you) asked to reset the password for your Trim account.\n\n` +
-        `Choose a new password here (the link expires in ${RESET_TOKEN_MINUTES} minutes):\n${link}\n\n` +
-        `If you didn't ask for this, you can ignore this email. Your password won't change.`,
+      ...renderEmail({
+        subject: "Reset your Trim password",
+        preheader: "Choose a new password for your Trim account.",
+        hero: "reset",
+        heroAlt: "Padlock circled by arrows",
+        heading: "Reset your password",
+        intro:
+          "Someone, hopefully you, asked to reset the password for your Trim account. Choose a new one with the button below.",
+        button: { label: "Choose a new password", url: link },
+        expiry: `Expires in ${RESET_TOKEN_MINUTES} minutes · works once`,
+        footer: "If you didn't ask for this, you can ignore this email. Your password won't change.",
+      }),
     });
   });
 
